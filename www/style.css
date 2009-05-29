@@ -1,0 +1,20 @@
+* { margin: 0; padding: 0; font-family: "Lucida Grande", "Lucida", "Verdana", sans-serif }
+body { background: url("/images/bg.png"); margin: 0px; font-size: 13px; }
+a { color: #00f }
+
+#header       { position: absolute; left: 60px; top:    0; right: 60px; height: 60px; background: url("images/bg_top.png") }
+#header_left  { position: absolute; left:    0; top:    0; width: 60px; height: 60px; background: url("images/bg_topleft.png") }
+#header_right { position: absolute; right:   0; top:    0; width: 60px; height: 60px; background: url("images/bg_topright.png") }
+#border_left  { position: absolute; left:    0; top: 60px; bottom: 60px; width: 60px; background: url("images/bg_left.png") }
+#border_right { position: absolute; right:   0; top: 60px; bottom: 60px; width: 60px; background: url("images/bg_right.png") }
+#footer       { position: absolute; left: 60px; bottom: 0; right: 60px; height: 60px; background: url("images/bg_bottom.png") }
+#footer_left  { position: absolute; left:    0; bottom: 0; width: 60px; height: 60px; background: url("images/bg_bottomleft.png") }
+#footer_right { position: absolute; right:   0; bottom: 0; width: 60px; height: 60px; background: url("images/bg_bottomright.png") }
+#hinge_top    { position: absolute; right:   0; top:  15%; width: 35px; height: 163px; background: url("images/hinge.png") }
+#hinge_bottom { position: absolute; right:   0; bottom: 15%; width: 35px; height: 163px; background: url("images/hinge.png") }
+
+#navigate { position: absolute; left: 45px; top: 42px; }
+#navigate a { color: #00F }
+
+#content { background-color: #ccc; position: absolute; top: 60px; bottom: 50px; left: 42px; right: 45px; overflow: auto; border: 1px solid #aaa}
+
