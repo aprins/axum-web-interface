@@ -52,7 +52,7 @@ sub buss {
     SELECT number, label, pre_on, pre_level, pre_balance, level, on_off, interlock, global_reset
       FROM buss_config ORDER BY number ASC|);
 
-  $self->htmlHeader(title => 'Mix buss configuration');
+  $self->htmlHeader(page => 'buss');
   table;
    Tr; th colspan => 9, 'Buss configuration'; end;
    Tr;

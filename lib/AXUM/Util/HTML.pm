@@ -11,9 +11,12 @@ our @EXPORT = qw| htmlHeader htmlFooter |;
 
 sub htmlHeader {
   my($self, %o) = @_;
+  my $title =
+    $o{page} eq 'home' ? 'AXUM Configuration Pages' :
+    $o{page} eq 'buss' ? 'Buss configuration' : '';
   html;
    head;
-    title $o{title};
+    title $title;
     Link href => '/style.css', rel => 'stylesheet', type => 'text/css';
     script type => 'text/javascript', src => '/scripts.js', ' ';
    end;
@@ -24,9 +27,9 @@ sub htmlHeader {
 
     div id => 'navigate';
      a href => '/', 'AXUM';
-     # this should indicate where we are
      lit " &raquo; ";
-     a href => '/', 'Module configuration';
+     a href => '/', 'Main menu' if $o{page} eq 'home';
+     a href => '/buss', 'Buss configuration' if $o{page} eq 'buss';
     end;
     div id => 'content';
 }
