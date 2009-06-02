@@ -15,10 +15,12 @@ sub htmlHeader {
    head;
     title $o{title};
     Link href => '/style.css', rel => 'stylesheet', type => 'text/css';
+    script type => 'text/javascript', src => '/scripts.js', ' ';
    end;
    body;
     div id => $_, '' for (qw| header header_left header_right border_left border_right
       footer footer_left footer_right hinge_top hinge_bottom|);
+    div id => 'loading', 'Saving changes, please wait...';
 
     div id => 'navigate';
      a href => '/', 'AXUM';
