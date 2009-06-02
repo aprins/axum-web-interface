@@ -69,6 +69,15 @@ function remove_input() {
     document.getElementById('content').removeChild(input_obj);
   input_obj = null;
 }
+function click_input(e) {
+  e = e || window.event;
+  var tg = e.target || e.srcElement;
+  while(tg && (tg.nodeType == 3 || tg.nodeName.toLowerCase() != 'div' || !tg.id || tg.id != 'input_obj'))
+    tg = tg.parentNode;
+  if(tg == null)
+    remove_input();
+  return true;
+}
 
 
 function conf_set(page, item, field, value, obj) {
@@ -114,3 +123,5 @@ function conf_text(page, item, field, value, obj) {
   return false;
 }
 
+
+window.onmousedown = click_input;
