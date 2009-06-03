@@ -13,7 +13,8 @@ sub htmlHeader {
   my($self, %o) = @_;
   my $title =
     $o{page} eq 'home' ? 'AXUM Configuration Pages' :
-    $o{page} eq 'buss' ? 'Buss configuration' : '';
+    $o{page} eq 'buss' ? 'Buss configuration' :
+    $o{page} eq 'monitorbuss' ? 'Monitor buss configuration' : '';
   html;
    head;
     title $title;
@@ -30,6 +31,7 @@ sub htmlHeader {
      lit " &raquo; ";
      a href => '/', 'Main menu' if $o{page} eq 'home';
      a href => '/buss', 'Buss configuration' if $o{page} eq 'buss';
+     a href => '/monitorbuss', 'Monitor buss configuration' if $o{page} eq 'monitorbuss';
     end;
     div id => 'content';
 }

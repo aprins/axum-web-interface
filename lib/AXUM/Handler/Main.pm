@@ -17,7 +17,8 @@ sub home {
   $self->htmlHeader(page => 'home');
   table;
    Tr; th ''; th 'Buss settings'; end;
-   Tr; th '1'; td; a href => '/buss', 'Mix buss configuration'; end; end;
+   Tr; th 1; td; a href => '/buss', 'Mix buss configuration'; end; end;
+   Tr; th 2; td; a href => '/monitorbuss', 'Monitor buss configuration'; end; end;
   end;
   $self->htmlFooter;
 }

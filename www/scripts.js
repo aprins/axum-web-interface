@@ -124,4 +124,42 @@ function conf_text(page, item, field, value, obj) {
 }
 
 
+function exp_over() {
+  var el = this.abbr ? this : document.getElementById(this.className);
+  if(el.over)
+    return;
+  el.over = 1;
+  var tmp;
+  tmp = el.abbr;
+  el.abbr = el.innerHTML;
+  el.innerHTML = tmp;
+}
+function exp_out() {
+  var el = this.abbr ? this : document.getElementById(this.className);
+  tmp = el.abbr;
+  el.abbr = el.innerHTML;
+  el.innerHTML = tmp;
+  el.over = 0;
+}
+
+
 window.onmousedown = click_input;
+
+window.onload = function() {
+  // look for all td/th tags with a class starting with exp_
+  var i;
+  var l = document.getElementsByTagName('td');
+  for(i=0; i<l.length; i++)
+    if(l[i].className.indexOf('exp_') == 0 || l[i].id.indexOf('exp_') == 0) {
+      l[i].onmouseover = exp_over;
+      l[i].onmouseout = exp_out;
+    }
+  l = document.getElementsByTagName('th');
+  for(i=0; i<l.length; i++)
+    if(l[i].className.indexOf('exp_') == 0 || l[i].id.indexOf('exp_') == 0) {
+      l[i].onmouseover = exp_over;
+      l[i].onmouseout = exp_out;
+    }
+};
+
+
