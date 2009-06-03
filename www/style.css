@@ -14,7 +14,7 @@ a.off { color: #bbb; }
 #hinge_top    { position: absolute; right:   0; top:  15%; width: 35px; height: 163px; background: url("images/hinge.png") }
 #hinge_bottom { position: absolute; right:   0; bottom: 15%; width: 35px; height: 163px; background: url("images/hinge.png") }
 
-#loading      { position: absolute; right: 45px; top: 42px; color: #555; display: none; }
+#loading      { position: absolute; right: 45px; top: 42px; color: #f00; display: none; font-weight: bold }
 #navigate { position: absolute; left: 45px; top: 42px; }
 #navigate a { color: #00F }
 
