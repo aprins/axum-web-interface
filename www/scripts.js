@@ -124,6 +124,23 @@ function conf_text(page, item, field, value, obj) {
 }
 
 
+function conf_select(page, item, field, value, obj, list) {
+  var d = create_input(obj, function(f) {
+    var s = f.getElementsByTagName('select')[0];
+    conf_set(page, item, field, s.options[s.selectedIndex].value, obj);
+  });
+  if(!d) return false;
+  var r = '<select onload="focus()">';
+  for(var i=0;i<list.length;i++)
+    r += '<option value="'+list[i][0]+'"'+(list[i][0] == value ? ' selected="selected"':'')+'>'+list[i][1]+'</option>';
+  r += '</select><input type="submit" value="Save" class="button">';
+  d.innerHTML = r;
+  d = d.getElementsByTagName('select')[0];
+  d.focus();
+  return false;
+}
+
+
 function exp_over() {
   var el = this.abbr ? this : document.getElementById(this.className);
   if(el.over)

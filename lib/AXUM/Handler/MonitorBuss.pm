@@ -15,7 +15,15 @@ YAWF::register(
 my @busses = map sprintf('buss_%d_%d', $_*2-1, $_*2), 1..16;
 
 
-# arguments: field name, db return object
+sub _selection {
+  return [
+   (map $_->{label}, @{shift->dbAll('SELECT label FROM buss_config ORDER BY number')}),
+   (map "Ext $_", 1..8)
+  ];
+}
+
+
+# arguments: field name, db return object, (+selection list for default_selection)
 sub _col {
   my($n, $d) = @_;
   my $v = $d->{$n};
@@ -38,7 +46,9 @@ sub _col {
       $v == 0 ? (class => 'off') : (), sprintf '%.1f dB', $v;
   }
   if($n eq 'default_selection') {
-    i '-';
+    a href => '#', onclick => sprintf(
+      'return conf_select("monitorbuss", %d, "default_selection", %d, this, default_selection_items)',
+      $d->{number}, $v), $_[2][$v];
   }
 }
 
@@ -46,11 +56,21 @@ sub _col {
 sub monitorbuss {
   my $self = shift;
 
+  my $sel = _selection $self;
   my $busses = $self->dbAll('SELECT number, label FROM buss_config ORDER BY number');
   my $mb = $self->dbAll('SELECT number, label, interlock, default_selection, dim_level, !s
     FROM monitor_buss_config ORDER BY number', join ', ', @busses);
 
   $self->htmlHeader(page => 'monitorbuss');
+  # create JS array for the options for default_selection
+  script type => 'text/javascript';
+   lit 'default_selection_items = ['.join(',', map {
+     (my $v = $sel->[$_]) =~ s/\\/\\\\/g;
+     $v =~ s/"/\\"/g;
+     qq|[$_,"$v"]|
+   } 0..$#$sel).'];';
+  end;
+
   table;
    Tr; th colspan => 21, 'Monitor buss configuration'; end;
    Tr;
@@ -72,7 +92,7 @@ sub monitorbuss {
       th $m->{number};
       td; _col 'label', $m; end;
       td; _col 'interlock', $m; end;
-      td; _col 'default_selection', $m; end;
+      td; _col 'default_selection', $m, $sel; end;
       for (@$busses) {
         td class => "exp_$_->{number}";
          _col $busses[$_->{number}-1], $m;
@@ -105,7 +125,8 @@ sub ajax {
     for(qw|label interlock default_selection dim_level|, @busses);
 
   $self->dbExec('UPDATE monitor_buss_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
-  _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} };
+  _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
+    $f->{field} eq 'default_selection' ? _selection $self : undef;
 }
 
 
