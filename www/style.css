@@ -22,7 +22,7 @@ a.off { color: #bbb; }
 
 table { background-color: transparent; font-size: 11px; border-collapse: collapse; }
 td    { background-color: #f0f0f0; border-left: none; border-right: 1px solid #cbd1d8; border-bottom: 1px solid #cbd1d8; padding: 1px 5px; height: 18px; line-height: 1.6em; white-space: nowrap; text-align: center; }
-th    { border-left: 1px solid #e5e5e5; border-right: 1px solid #a5a5a5; padding: 2px 5px; font-weight: bold; background: url(/images/table_head.png) repeat-x }
+th    { border-left: 1px solid #e5e5e5; border-right: 1px solid #a5a5a5; padding: 0px 5px; height: 20px; font-weight: bold; background: url(/images/table_head.png); }
 
 #input_obj { padding: 3px; background-color: #fff; border: 1px solid #aaa }
 

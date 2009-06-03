@@ -56,19 +56,21 @@ sub buss {
   table;
    Tr; th colspan => 9, 'Buss configuration'; end;
    Tr;
-    th rowspan => 2, 'Buss';
-    th rowspan => 2, 'Label';
+    th colspan => 2, '';
     th colspan => 3, 'Master Pre/Post';
     th colspan => 2, 'Master';
-    th rowspan => 2, 'Interlock';
+    th '';
     th rowspan => 2, "Buss reset\nby module active";
    end;
    Tr;
+    th 'Buss';
+    th 'Label';
     th 'Module on';
     th 'Module level';
     th 'Module balance';
     th 'Level';
     th 'State';
+    th 'Interlock';
    end;
    for my $b (@$busses) {
      Tr;
