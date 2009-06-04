@@ -30,6 +30,11 @@ function ajax(url, func) {
   http_requests[i].open('GET', url, true);
   http_requests[i].send(null);
 }
+function qq(v) {
+  v = ''+v;
+  return v.replace(/&/g,"&amp;").replace(/</,"&lt;").replace(/>/,"&gt;").replace(/"/g,'&quot;');
+}
+
 
 
 // creates an input container, positioned below obj
@@ -101,7 +106,7 @@ function conf_level(page, item, field, value, obj) {
     conf_set(page, item, field, val, obj);
   });
   if(!d) return false;
-  d.innerHTML = '<input type="text" value="'+value+'" size="6" class="text">dB '
+  d.innerHTML = '<input type="text" value="'+qq(value)+'" size="6" class="text">dB '
     +'<input type="submit" value="Save" class="button">';
   d = d.getElementsByTagName('input')[0];
   d.focus();
@@ -115,7 +120,7 @@ function conf_text(page, item, field, value, obj) {
     conf_set(page, item, field, f.getElementsByTagName('input')[0].value, obj);
   });
   if(!d) return false;
-  d.innerHTML = '<input type="text" value="'+value+'" size="10" class="text">'
+  d.innerHTML = '<input type="text" value="'+qq(value)+'" size="10" class="text">'
     +'<input type="submit" value="Save" class="button">';
   d = d.getElementsByTagName('input')[0];
   d.focus();
@@ -130,13 +135,12 @@ function conf_select(page, item, field, value, obj, list) {
     conf_set(page, item, field, s.options[s.selectedIndex].value, obj);
   });
   if(!d) return false;
-  var r = '<select onload="focus()">';
+  var r = '<select>';
   for(var i=0;i<list.length;i++)
-    r += '<option value="'+list[i][0]+'"'+(list[i][0] == value ? ' selected="selected"':'')+'>'+list[i][1]+'</option>';
+    r += '<option value="'+qq(list[i][0])+'"'+(list[i][0] == value ? ' selected="selected"':'')+'>'+qq(list[i][1])+'</option>';
   r += '</select><input type="submit" value="Save" class="button">';
   d.innerHTML = r;
-  d = d.getElementsByTagName('select')[0];
-  d.focus();
+  d.getElementsByTagName('select')[0].focus();
   return false;
 }
 
