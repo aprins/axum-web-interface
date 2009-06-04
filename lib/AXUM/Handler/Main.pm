@@ -14,11 +14,12 @@ YAWF::register(
 sub home {
   my $self = shift;
 
-  $self->htmlHeader(page => 'home');
+  $self->htmlHeader(title => 'AXUM configuration pages', page => 'home');
   table;
    Tr; th ''; th 'Buss settings'; end;
    Tr; th 1; td; a href => '/buss', 'Mix buss configuration'; end; end;
    Tr; th 2; td; a href => '/monitorbuss', 'Monitor buss configuration'; end; end;
+   Tr; th 3; td; a href => '/source', 'Source configuration'; end; end;
   end;
   $self->htmlFooter;
 }

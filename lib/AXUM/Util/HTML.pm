@@ -11,13 +11,9 @@ our @EXPORT = qw| htmlHeader htmlFooter |;
 
 sub htmlHeader {
   my($self, %o) = @_;
-  my $title =
-    $o{page} eq 'home' ? 'AXUM Configuration Pages' :
-    $o{page} eq 'buss' ? 'Buss configuration' :
-    $o{page} eq 'monitorbuss' ? 'Monitor buss configuration' : '';
   html;
    head;
-    title $title;
+    title $o{title};
     Link href => '/style.css', rel => 'stylesheet', type => 'text/css';
     script type => 'text/javascript', src => '/scripts.js', ' ';
    end;
@@ -32,6 +28,7 @@ sub htmlHeader {
      a href => '/', 'Main menu' if $o{page} eq 'home';
      a href => '/buss', 'Buss configuration' if $o{page} eq 'buss';
      a href => '/monitorbuss', 'Monitor buss configuration' if $o{page} eq 'monitorbuss';
+     a href => '/source', 'Source configuration' if $o{page} eq 'source';
     end;
     div id => 'content';
 }

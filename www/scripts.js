@@ -39,7 +39,7 @@ function qq(v) {
 
 // creates an input container, positioned below obj
 var input_obj = null;
-function create_input(obj, submit) {
+function create_input(obj, submit, offheight) {
   if(input_obj != null && input_obj.obj == obj) {
     remove_input();
     return null;
@@ -48,7 +48,7 @@ function create_input(obj, submit) {
 
   // get coordinates of obj (relative to our content div)
   var x = 0;
-  var y = obj.offsetHeight;
+  var y = offheight == null ? obj.offsetHeight : offheight;
   var c = document.getElementById('content');
   var o = obj;
   do {
@@ -65,7 +65,8 @@ function create_input(obj, submit) {
   input_obj.id = 'input_obj';
   o.appendChild(input_obj);
   o = document.createElement('form');
-  o.onsubmit = function() { submit(this); return false };
+  o.method = 'POST';
+  o.onsubmit = submit == null ? null : function() { submit(this); return false };
   input_obj.appendChild(o);
   return o;
 }
@@ -107,7 +108,7 @@ function conf_level(page, item, field, value, obj) {
   });
   if(!d) return false;
   d.innerHTML = '<input type="text" value="'+qq(value)+'" size="6" class="text">dB '
-    +'<input type="submit" value="Save" class="button">';
+    +'<input type="submit" value="Save" class="button" />';
   d = d.getElementsByTagName('input')[0];
   d.focus();
   d.select();
@@ -121,7 +122,7 @@ function conf_text(page, item, field, value, obj) {
   });
   if(!d) return false;
   d.innerHTML = '<input type="text" value="'+qq(value)+'" size="10" class="text">'
-    +'<input type="submit" value="Save" class="button">';
+    +'<input type="submit" value="Save" class="button" />';
   d = d.getElementsByTagName('input')[0];
   d.focus();
   d.select();
@@ -138,9 +139,28 @@ function conf_select(page, item, field, value, obj, list) {
   var r = '<select>';
   for(var i=0;i<list.length;i++)
     r += '<option value="'+qq(list[i][0])+'"'+(list[i][0] == value ? ' selected="selected"':'')+'>'+qq(list[i][1])+'</option>';
-  r += '</select><input type="submit" value="Save" class="button">';
+  r += '</select><input type="submit" value="Save" class="button" />';
   d.innerHTML = r;
   d.getElementsByTagName('select')[0].focus();
+  return false;
+}
+
+
+/* this is an actual form, doesn't use AJAX */
+function conf_addsource(obj, list) {
+  var d = create_input(obj, null, -70);
+  if(!d) return false;
+
+  var opts = '';
+  for(var i=0;i<list.length;i++)
+    opts += '<option value="'+qq(list[i][0])+'">'+qq(list[i][1])+'</option>';
+
+  d.style.textAlign = 'right';
+  d.innerHTML =
+    '<label for="input1" >Input 1 (left):</label><select style="width: 350px" id="input1" name="input1">'+opts+'</select><br />'
+   +'<label for="input2">Input 2 (right):</label><select style="width: 350px" id="input2" name="input2">'+opts+'</select><br />'
+   +'<label for="label">Label:</label><input type="text" class="text" name="label" id="label" size="10" />'
+   +' <input type="submit" value="Create" class="button" />';
   return false;
 }
 

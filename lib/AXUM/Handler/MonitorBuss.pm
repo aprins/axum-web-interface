@@ -61,7 +61,7 @@ sub monitorbuss {
   my $mb = $self->dbAll('SELECT number, label, interlock, default_selection, dim_level, !s
     FROM monitor_buss_config ORDER BY number', join ', ', @busses);
 
-  $self->htmlHeader(page => 'monitorbuss');
+  $self->htmlHeader(title => 'Monitor buss configuraiton', page => 'monitorbuss');
   # create JS array for the options for default_selection
   script type => 'text/javascript';
    lit 'default_selection_items = ['.join(',', map {
