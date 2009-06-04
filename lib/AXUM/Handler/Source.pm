@@ -145,7 +145,9 @@ sub source {
         td class => "exp_$_"; _col $_, $s; end;
       }
       td;
-       a href => '/source?del='.$s->{number}, 'delete';
+       a href => '/source?del='.$s->{number}, title => 'Delete';
+        img src => '/images/delete.png', alt => 'delete';
+       end;
       end;
      end;
    }
