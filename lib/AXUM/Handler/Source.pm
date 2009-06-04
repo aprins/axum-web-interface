@@ -115,7 +115,7 @@ sub source {
     th '';
     th colspan => 6, '';
     th colspan => 8, 'Redlight';
-    th colspan => 16, 'Monitor destination mute/dimm';
+    th colspan => 16, 'Monitor destination mute/dim';
     th '';
    end;
    Tr;
