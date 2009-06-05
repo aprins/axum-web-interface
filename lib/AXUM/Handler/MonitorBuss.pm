@@ -58,8 +58,8 @@ sub monitorbuss {
 
   my $sel = _selection $self;
   my $busses = $self->dbAll('SELECT number, label FROM buss_config ORDER BY number');
-  my $mb = $self->dbAll('SELECT number, label, interlock, default_selection, dim_level, !s
-    FROM monitor_buss_config ORDER BY number', join ', ', @busses);
+  my $mb = $self->dbAll('SELECT number, label, interlock, default_selection, dim_level, !s,
+    number <= dsp_count()*4 AS active FROM monitor_buss_config ORDER BY number', join ', ', @busses);
 
   $self->htmlHeader(title => 'Monitor buss configuraiton', page => 'monitorbuss');
   # create JS array for the options for default_selection
@@ -88,7 +88,7 @@ sub monitorbuss {
    end;
 
    for my $m (@$mb) {
-     Tr;
+     Tr $m->{active} ? () : (class => 'inactive');
       th $m->{number};
       td; _col 'label', $m; end;
       td; _col 'interlock', $m; end;
