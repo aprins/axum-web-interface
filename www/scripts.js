@@ -136,12 +136,14 @@ function conf_select(page, item, field, value, obj, list) {
     conf_set(page, item, field, s.options[s.selectedIndex].value, obj);
   });
   if(!d) return false;
-  var r = '<select>';
-  for(var i=0;i<list.length;i++)
-    r += '<option value="'+qq(list[i][0])+'"'+(list[i][0] == value ? ' selected="selected"':'')+'>'+qq(list[i][1])+'</option>';
-  r += '</select><input type="submit" value="Save" class="button" />';
-  d.innerHTML = r;
-  d.getElementsByTagName('select')[0].focus();
+  d.innerHTML = document.getElementById(list).innerHTML
+    +'<input type="submit" value="Save" class="button" />';
+  d = d.getElementsByTagName('select')[0];
+  d.style.display = 'inline';
+  for(var i=0; i<d.length; i++)
+    if(d.options[i].value == value)
+      d.options[i].selected = true;
+  d.focus();
   return false;
 }
 
@@ -157,10 +159,14 @@ function conf_addsource(obj, list) {
 
   d.style.textAlign = 'right';
   d.innerHTML =
-    '<label for="input1" >Input 1 (left):</label><select style="width: 350px" id="input1" name="input1">'+opts+'</select><br />'
-   +'<label for="input2">Input 2 (right):</label><select style="width: 350px" id="input2" name="input2">'+opts+'</select><br />'
+    '<label for="input1" >Input 1 (left):</label>'+document.getElementById(list).innerHTML+'<br />'
+   +'<label for="input2">Input 2 (right):</label>'+document.getElementById(list).innerHTML+'<br />'
    +'<label for="label">Label:</label><input type="text" class="text" name="label" id="label" size="10" />'
    +' <input type="submit" value="Create" class="button" />';
+  d = d.getElementsByTagName('select');
+  d[0].name = d[0].id = 'input1';
+  d[1].name = d[1].id = 'input2';
+  d[0].style.width = d[1].style.width = '350px';
   return false;
 }
 

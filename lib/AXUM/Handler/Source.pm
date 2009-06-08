@@ -47,7 +47,7 @@ sub _col {
   if($n =~ /input([12])/) {
     $v = (grep $_->{addr} == $d->{'input'.$1.'_addr'} && $_->{channel} == $d->{'input'.$1.'_sub_ch'}, @{$_[2]})[0];
     a href => '#', $v->{active} ? () : (class => 'off'), onclick => sprintf(
-      'return conf_select("source", %d, "%s", "%s", this, input_channels)', $d->{number}, $n, "$v->{addr}_$v->{channel}"),
+      'return conf_select("source", %d, "%s", "%s", this, "input_channels")', $d->{number}, $n, "$v->{addr}_$v->{channel}"),
       sprintf('Slot %d ch %d', $v->{slot_nr}, $v->{channel});
   }
 }
@@ -100,13 +100,12 @@ sub source {
 
   $self->htmlHeader(title => 'Source configuration', page => 'source');
   # create list of available channels for javascript
-  script type => 'text/javascript';
-   lit 'input_channels=['.join(',', map {
-     my $n = sprintf 'Slot %d channel %d (%s)', $_->{slot_nr}, $_->{channel}, $_->{name};
-     $n =~ s/\\/\\\\/g;
-     $n =~ s/"/\\"/g;
-     sprintf('["%d_%d","%s"]', $_->{addr}, $_->{channel}, $n);
-   } @$chan).'];';
+  div id => 'input_channels', class => 'hidden';
+   Select;
+    option value => "$_->{addr}_$_->{channel}",
+        sprintf "Slot %d channel %d (%s)", $_->{slot_nr}, $_->{channel}, $_->{name}
+      for @$chan;
+   end;
   end;
 
   table;
@@ -153,7 +152,7 @@ sub source {
    }
   end;
   br;
-  a href => '#', onclick => 'return conf_addsource(this, input_channels)', 'Create new source';
+  a href => '#', onclick => 'return conf_addsource(this, "input_channels")', 'Create new source';
 
   $self->htmlFooter;
 }

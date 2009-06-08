@@ -47,7 +47,7 @@ sub _col {
   }
   if($n eq 'default_selection') {
     a href => '#', onclick => sprintf(
-      'return conf_select("monitorbuss", %d, "default_selection", %d, this, default_selection_items)',
+      'return conf_select("monitorbuss", %d, "default_selection", %d, this, "default_selection_items")',
       $d->{number}, $v), $_[2][$v];
   }
 }
@@ -62,13 +62,10 @@ sub monitorbuss {
     number <= dsp_count()*4 AS active FROM monitor_buss_config ORDER BY number', join ', ', @busses);
 
   $self->htmlHeader(title => 'Monitor buss configuraiton', page => 'monitorbuss');
-  # create JS array for the options for default_selection
-  script type => 'text/javascript';
-   lit 'default_selection_items = ['.join(',', map {
-     (my $v = $sel->[$_]) =~ s/\\/\\\\/g;
-     $v =~ s/"/\\"/g;
-     qq|[$_,"$v"]|
-   } 0..$#$sel).'];';
+  div id => 'default_selection_items', class => 'hidden';
+   Select;
+    option value => $_, $sel->[$_] for (0..$#$sel);
+   end;
   end;
 
   table;

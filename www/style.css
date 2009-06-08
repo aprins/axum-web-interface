@@ -3,6 +3,7 @@ body { background: url("/images/bg.png"); margin: 0px; font-size: 13px; }
 a { color: #00f; }
 a.off, tr.inactive a.off { color: #bbb!important; }
 img { border: 0 }
+.hidden { display: none }
 
 #header       { position: absolute; left: 60px; top:    0; right: 60px; height: 60px; background: url("images/bg_top.png") }
 #header_left  { position: absolute; left:    0; top:    0; width: 60px; height: 60px; background: url("images/bg_topleft.png") }
