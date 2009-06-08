@@ -20,6 +20,7 @@ sub home {
    Tr; th 1; td; a href => '/buss', 'Mix buss configuration'; end; end;
    Tr; th 2; td; a href => '/monitorbuss', 'Monitor buss configuration'; end; end;
    Tr; th 3; td; a href => '/source', 'Source configuration'; end; end;
+   Tr; th 4; td; a href => '/externsrc', 'Extern source configuration'; end; end;
   end;
   $self->htmlFooter;
 }

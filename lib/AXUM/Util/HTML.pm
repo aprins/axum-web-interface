@@ -29,6 +29,7 @@ sub htmlHeader {
      a href => '/buss', 'Buss configuration' if $o{page} eq 'buss';
      a href => '/monitorbuss', 'Monitor buss configuration' if $o{page} eq 'monitorbuss';
      a href => '/source', 'Source configuration' if $o{page} eq 'source';
+     a href => '/externsrc', 'Extern source configuration' if $o{page} eq 'externsrc';
     end;
     div id => 'content';
 }

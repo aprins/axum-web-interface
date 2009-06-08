@@ -32,3 +32,5 @@ tr.inactive a { color: #aaf }
 
 input.text { border: 1px solid #666; background-color: #eee }
 input.button { border: 1px solid #666; background-color: #bbb }
+optgroup option { padding-left: 15px }
+option.off { color: #bbb }
