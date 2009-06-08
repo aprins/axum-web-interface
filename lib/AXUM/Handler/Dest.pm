@@ -23,27 +23,6 @@ sub _channels {
 }
 
 
-sub _print_sourcelist {
-  my($lst, $name, $min) = @_;
-  div id => $name, class => 'hidden';
-   Select;
-    option value => 0, 'none';
-    my $last = '';
-    for (@$lst) {
-      next if $min && $_->{type} eq 'n-1';
-      if($last ne $_->{type}) {
-        end if $last;
-        $last = $_->{type};
-        optgroup label => $last;
-      }
-      option value => $_->{number}, !$_->{active} ? (class => 'off') : (), $_->{label}
-    }
-    end if $last;
-   end;
-  end;
-}
-
-
 sub _col {
   my($n, $d, $lst) = @_;
   my $v = $d->{$n};
@@ -123,8 +102,8 @@ sub dest {
       for @$ch;
    end;
   end;
-  _print_sourcelist($lst, 'source_items', 0);
-  _print_sourcelist($lst, 'mix_minus_items', 1);
+  $self->htmlSourceList($lst, 'source_items');
+  $self->htmlSourceList($lst, 'mix_minus_items', 1);
 
   table;
    Tr; th colspan => 8, 'Destination configuration'; end;

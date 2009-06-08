@@ -6,7 +6,7 @@ use warnings;
 use YAWF ':html';
 use Exporter 'import';
 
-our @EXPORT = qw| htmlHeader htmlFooter |;
+our @EXPORT = qw| htmlHeader htmlFooter htmlSourceList |;
 
 
 sub htmlHeader {
@@ -40,6 +40,27 @@ sub htmlFooter {
     end; # /div content
    end; # /body
   end; # /html
+}
+
+
+sub htmlSourceList {
+  my($self, $lst, $name, $min) = @_;
+  div id => $name, class => 'hidden';
+   Select;
+    option value => 0, 'none';
+    my $last = '';
+    for (@$lst) {
+      next if $min && $_->{type} eq 'n-1';
+      if($last ne $_->{type}) {
+        end if $last;
+        $last = $_->{type};
+        optgroup label => $last;
+      }
+      option value => $_->{number}, !$_->{active} ? (class => 'off') : (), $_->{label}
+    }
+    end if $last;
+   end;
+  end;
 }
 
 

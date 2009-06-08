@@ -30,21 +30,7 @@ sub extsrc {
     join ', ', map "ext$_", 1..8);
 
   $self->htmlHeader(title => 'Extern source configuration', page => 'externsrc');
-  div id => 'matrix_sources', class => 'hidden';
-   Select;
-    option value => 0, 'none';
-    my $last = '';
-    for (@$lst) {
-      if($last ne $_->{type}) {
-        end if $last;
-        $last = $_->{type};
-        optgroup label => $last;
-      }
-      option value => $_->{number}, !$_->{active} ? (class => 'off') : (), $_->{label} 
-    }
-    end if $last;
-   end;
-  end;
+  $self->htmlSourceList($lst, 'matrix_sources');
 
   table;
    Tr; th colspan => 10, 'Extern source configuration'; end;
