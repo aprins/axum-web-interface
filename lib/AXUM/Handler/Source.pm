@@ -151,8 +151,8 @@ sub source {
      end;
    }
   end;
-  br;
-  a href => '#', onclick => 'return conf_addsource(this, "input_channels")', 'Create new source';
+  br; br;
+  a href => '#', onclick => 'return conf_addsrcdest(this, "input_channels", "input")', 'Create new source';
 
   $self->htmlFooter;
 }

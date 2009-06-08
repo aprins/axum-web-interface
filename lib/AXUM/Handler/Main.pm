@@ -21,6 +21,7 @@ sub home {
    Tr; th 2; td; a href => '/monitorbuss', 'Monitor buss configuration'; end; end;
    Tr; th 3; td; a href => '/source', 'Source configuration'; end; end;
    Tr; th 4; td; a href => '/externsrc', 'Extern source configuration'; end; end;
+   Tr; th 5; td; a href => '/dest', 'Destination configuration'; end; end;
   end;
   $self->htmlFooter;
 }

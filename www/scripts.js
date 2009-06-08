@@ -149,23 +149,20 @@ function conf_select(page, item, field, value, obj, list) {
 
 
 /* this is an actual form, doesn't use AJAX */
-function conf_addsource(obj, list) {
+function conf_addsrcdest(obj, list, type) {
   var d = create_input(obj, null, -70);
   if(!d) return false;
 
-  var opts = '';
-  for(var i=0;i<list.length;i++)
-    opts += '<option value="'+qq(list[i][0])+'">'+qq(list[i][1])+'</option>';
-
+  var uctype = type.substr(0,1).toUpperCase() + type.substr(1,type.length);
   d.style.textAlign = 'right';
   d.innerHTML =
-    '<label for="input1" >Input 1 (left):</label>'+document.getElementById(list).innerHTML+'<br />'
-   +'<label for="input2">Input 2 (right):</label>'+document.getElementById(list).innerHTML+'<br />'
+    '<label for="'+type+'1" >'+uctype+' 1 (left):</label>'+document.getElementById(list).innerHTML+'<br />'
+   +'<label for="'+type+'2">'+uctype+' 2 (right):</label>'+document.getElementById(list).innerHTML+'<br />'
    +'<label for="label">Label:</label><input type="text" class="text" name="label" id="label" size="10" />'
    +' <input type="submit" value="Create" class="button" />';
   d = d.getElementsByTagName('select');
-  d[0].name = d[0].id = 'input1';
-  d[1].name = d[1].id = 'input2';
+  d[0].name = d[0].id = type+'1';
+  d[1].name = d[1].id = type+'2';
   d[0].style.width = d[1].style.width = '350px';
   return false;
 }
