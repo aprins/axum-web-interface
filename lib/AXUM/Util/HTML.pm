@@ -31,6 +31,7 @@ sub htmlHeader {
      a href => '/source', 'Source configuration' if $o{page} eq 'source';
      a href => '/externsrc', 'Extern source configuration' if $o{page} eq 'externsrc';
      a href => '/dest', 'Destination configuration' if $o{page} eq 'dest';
+     a href => '/talkback', 'Talkback configuration' if $o{page} eq 'talkback';
     end;
     div id => 'content';
 }
