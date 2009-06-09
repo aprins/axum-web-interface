@@ -99,7 +99,7 @@ function conf_set(page, item, field, value, obj) {
 }
 
 
-function conf_level(page, item, field, value, obj) {
+function conf_number(unit, page, item, field, value, obj) {
   var d = create_input(obj, function(f) {
     var val = f.getElementsByTagName('input')[0].value;
     if(isNaN(parseFloat(val)))
@@ -107,13 +107,18 @@ function conf_level(page, item, field, value, obj) {
     conf_set(page, item, field, val, obj);
   });
   if(!d) return false;
-  d.innerHTML = '<input type="text" value="'+qq(value)+'" size="6" class="text">dB '
-    +'<input type="submit" value="Save" class="button" />';
+  d.innerHTML = '<input type="text" value="'+qq(value)+'" size="6" class="text">'+unit
+    +' <input type="submit" value="Save" class="button" />';
   d = d.getElementsByTagName('input')[0];
   d.focus();
   d.select();
   return false;
 }
+
+
+function conf_level(page, item, field, value, obj) { return conf_number('dB', page, item, field, value, obj); }
+function conf_freq( page, item, field, value, obj) { return conf_number('Hz', page, item, field, value, obj); }
+function conf_proc( page, item, field, value, obj) { return conf_number('%',  page, item, field, value, obj); }
 
 
 function conf_text(page, item, field, value, obj) {

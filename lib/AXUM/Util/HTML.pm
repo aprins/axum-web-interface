@@ -33,6 +33,10 @@ sub htmlHeader {
      a href => '/dest', 'Destination configuration' if $o{page} eq 'dest';
      a href => '/talkback', 'Talkback configuration' if $o{page} eq 'talkback';
      a href => '/module', 'Module configuration' if $o{page} eq 'module';
+     if($o{section}) {
+       lit " &raquo; ";
+       a href => "/module/$o{section}", "Module $o{section}";
+     }
     end;
     div id => 'content';
 }
