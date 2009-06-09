@@ -23,6 +23,7 @@ sub home {
    Tr; th 4; td; a href => '/externsrc', 'Extern source configuration'; end; end;
    Tr; th 5; td; a href => '/dest', 'Destination configuration'; end; end;
    Tr; th 6; td; a href => '/talkback', 'Talkback configuration'; end; end;
+   Tr; th 7; td; a href => '/module', 'Module configuration'; end; end;
   end;
   $self->htmlFooter;
 }
