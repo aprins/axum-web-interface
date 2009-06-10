@@ -39,7 +39,7 @@ function qq(v) {
 
 // creates an input container, positioned below obj
 var input_obj = null;
-function create_input(obj, submit, offheight) {
+function create_input(obj, submit, offheight, offwidth) {
   if(input_obj != null && input_obj.obj == obj) {
     remove_input();
     return null;
@@ -47,7 +47,7 @@ function create_input(obj, submit, offheight) {
   remove_input();
 
   // get coordinates of obj (relative to our content div)
-  var x = 0;
+  var x = offwidth == null ? 0 : offwidth;
   var y = offheight == null ? obj.offsetHeight : offheight;
   var c = document.getElementById('content');
   var o = obj;
@@ -169,6 +169,29 @@ function conf_addsrcdest(obj, list, type) {
   d[0].name = d[0].id = type+'1';
   d[1].name = d[1].id = type+'2';
   d[0].style.width = d[1].style.width = '350px';
+  return false;
+}
+
+
+function conf_eq(obj, item) {
+  var d = create_input(obj, function (o) {
+    var val = '';
+    var l = o.getElementsByTagName('input');
+    for(var i=0; i<l.length; i++)
+      if(l[i].name)
+        val += ';'+l[i].name+'='+encodeURIComponent(l[i].value);
+    l = o.getElementsByTagName('select');
+    for(i=0; i<l.length; i++)
+      val += ';'+l[i].name+'='+encodeURIComponent(l[i].options[l[i].selectedIndex].value);
+    val = val.substr(1, val.length-1);
+    ajax('/ajax/module/'+item+'/eq?'+val, function(h) {
+      document.getElementById('eq_table_container').innerHTML = h.responseText;
+      remove_input(input_obj);
+    });
+  }, 0, obj.offsetWidth);
+  if(!d) return false;
+  d.innerHTML = document.getElementById('eq_table_container').innerHTML;
+  d.getElementsByTagName('table')[0].id = 'eq_table';
   return false;
 }
 

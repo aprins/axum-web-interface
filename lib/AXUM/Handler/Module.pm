@@ -10,6 +10,7 @@ YAWF::register(
   qr{module} => \&overview,
   qr{module/([1-9][0-9]*)} => \&conf,
   qr{ajax/module} => \&ajax,
+  qr{ajax/module/([1-9][0-9]*)/eq} => \&eqajax,
 );
 
 
@@ -119,13 +120,65 @@ sub _col {
 }
 
 
+sub _eqtable {
+  my $d = shift;
+
+  my @eq_types = ('Off', 'HPF', 'Low shelf', 'Peaking', 'High shelf', 'LPF', 'BPF', 'Notch');
+
+  table;
+   Tr; th 'Band'; th 'Range'; th 'Frequency'; th 'Bandwidth'; th 'Type'; end;
+   for my $i (1..6) {
+     Tr;
+      th $i;
+      td;
+       input type => 'text', class => 'text', size => 4, name => "eq_band_${i}_range",
+         value => $d->{"eq_band_${i}_range"};
+       txt ' dB';
+      end;
+      td;
+       input type => 'text', class => 'text', size => 7, name => "eq_band_${i}_freq",
+         value => $d->{"eq_band_${i}_freq"};
+       txt ' Hz';
+      end;
+      td;
+       txt 'Q = ';
+       input type => 'text', class => 'text', size => 4, name => "eq_band_${i}_bw",
+         value => sprintf '%.1f', $d->{"eq_band_${i}_bw"};
+      end;
+      td;
+       Select style => 'width: 100px', name => "eq_band_${i}_type";
+        option value => $_, $_ == $d->{"eq_band_${i}_type"} ? (selected => 'selected') : (),
+          $eq_types[$_] for (0..$#eq_types);
+       end;
+      end;
+     end;
+   }
+   Tr;
+    td '';
+    td '0 - 18';
+    td '20 - 20000';
+    td '0.1 - 10';
+    td;
+     input type => 'submit', style => 'float: right', class => 'button', value => 'Save';
+    end;
+   end;
+  end;
+}
+
+
 sub conf {
   my($self, $nr) = @_;
 
   my $mod = $self->dbRow(q|
     SELECT number, source_a, source_b, insert_source, insert_on_off_a, insert_on_off_b,
       gain, lc_frequency, lc_on_off_a, lc_on_off_b, eq_on_off_a, eq_on_off_b,
-      dyn_amount, dyn_on_off_a, dyn_on_off_b, mod_level, mod_on_off
+      dyn_amount, dyn_on_off_a, dyn_on_off_b, mod_level, mod_on_off,
+      eq_band_1_range, eq_band_1_freq, eq_band_1_bw, eq_band_1_type,
+      eq_band_2_range, eq_band_2_freq, eq_band_2_bw, eq_band_2_type,
+      eq_band_3_range, eq_band_3_freq, eq_band_3_bw, eq_band_3_type,
+      eq_band_4_range, eq_band_4_freq, eq_band_4_bw, eq_band_4_type,
+      eq_band_5_range, eq_band_5_freq, eq_band_5_bw, eq_band_5_type,
+      eq_band_6_range, eq_band_6_freq, eq_band_6_bw, eq_band_6_type
     FROM module_config
     WHERE number = ?|,
     $nr
@@ -136,6 +189,9 @@ sub conf {
 
   $self->htmlHeader(page => 'module', section => $nr, title => "Module $nr configuration");
   $self->htmlSourceList($lst, 'matrix_sources');
+  div id => 'eq_table_container', class => 'hidden';
+   _eqtable($mod);
+  end;
   table;
    Tr; th colspan => 4, "Configuration for module $nr"; end;
    Tr; th 'Source A'; td colspan => 3; _col 'source_a', $mod, $lst; end; end;
@@ -162,7 +218,7 @@ sub conf {
     td; _col 'eq_on_off_a', $mod; end;
     td; _col 'eq_on_off_b', $mod; end;
     td;
-     a href => "/module/$nr/eq"; lit 'EQ settings &raquo;'; end;
+     a href => "#", onclick => "return conf_eq(this, $nr)"; lit 'EQ settings &raquo;'; end;
     end;
    end;
    Tr; th 'Dynamics';
@@ -206,6 +262,25 @@ sub ajax {
   $self->dbExec('UPDATE module_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
   _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
     $f->{field} =~ /source/ ? $self->dbAll(q|SELECT number, label, active FROM matrix_sources ORDER BY number|) : ();
+}
+
+
+sub eqajax {
+  my($self, $nr) = @_;
+
+  my @num = (regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ]);
+  my $f = $self->formValidate(map +(
+    { name => "eq_band_${_}_range", @num },
+    { name => "eq_band_${_}_freq", @num },
+    { name => "eq_band_${_}_bw", @num },
+    { name => "eq_band_${_}_type", enum => [ 0..7 ] },
+  ), 1..6);
+  return 404 if $f->{_err};
+
+  my %set = map +("$_ = ?" => $f->{$_}),
+    map +("eq_band_${_}_range", "eq_band_${_}_freq", "eq_band_${_}_bw", "eq_band_${_}_type"), 1..6;
+  $self->dbExec('UPDATE module_config !H WHERE number = ?', \%set, $nr);
+  _eqtable $f;
 }
 
 

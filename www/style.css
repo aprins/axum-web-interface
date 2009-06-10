@@ -39,3 +39,7 @@ p.navigate { display: inline; float: right }
 p.navigate a { margin-right: 5px }
 p.navigate a.sel { text-decoration: none; color: #000 }
 
+#eq_table td { padding: 0 5px; background-color: #fff }
+#eq_table select { height: 20px; border: 1px solid #666; background-color: #eee }
+#eq_table input.text { text-align: right }
+
