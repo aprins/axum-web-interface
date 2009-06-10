@@ -37,6 +37,7 @@ sub htmlHeader {
        lit " &raquo; ";
        a href => "/module/$o{section}", "Module $o{section}";
      }
+     a href => '/module/assign', 'Module assignment' if $o{page} eq 'moduleassign';
     end;
     div id => 'content';
 }

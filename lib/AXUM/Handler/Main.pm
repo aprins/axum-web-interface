@@ -24,6 +24,7 @@ sub home {
    Tr; th 5; td; a href => '/dest', 'Destination configuration'; end; end;
    Tr; th 6; td; a href => '/talkback', 'Talkback configuration'; end; end;
    Tr; th 7; td; a href => '/module', 'Module configuration'; end; end;
+   Tr; th 8; td; a href => '/module/assign', 'Module assignment'; end; end;
   end;
   $self->htmlFooter;
 }
