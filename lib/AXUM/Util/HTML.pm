@@ -42,6 +42,7 @@ sub htmlHeader {
        }
      }
      a href => '/module/assign', 'Module assignment' if $o{page} eq 'moduleassign';
+     a href => '/globalconf', 'Global configuration' if $o{page} eq 'globalconf';
     end;
     div id => 'content';
 }

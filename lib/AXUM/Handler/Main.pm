@@ -25,6 +25,7 @@ sub home {
    Tr; th 6; td; a href => '/talkback', 'Talkback configuration'; end; end;
    Tr; th 7; td; a href => '/module/assign', 'Module assignment'; end; end;
    Tr; th 8; td; a href => '/module', 'Module configuration'; end; end;
+   Tr; th 9; td; a href => '/globalconf', 'Global configuration'; end; end;
   end;
   $self->htmlFooter;
 }
