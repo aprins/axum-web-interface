@@ -81,6 +81,14 @@ sub overview {
       }
      end;
      Tr $p > $dspcount ? (class => 'inactive') : ();
+      th 'Routing';
+      for (@m) {
+        td;
+         a href => "/module/$mod->[$_]{number}/route"; lit 'Routing &raquo;'; end;
+        end;
+      }
+     end;
+     Tr;
       td colspan => 9, style => 'background: none', '';
      end;
    }

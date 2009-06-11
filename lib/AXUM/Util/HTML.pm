@@ -32,10 +32,14 @@ sub htmlHeader {
      a href => '/externsrc', 'Extern source configuration' if $o{page} eq 'externsrc';
      a href => '/dest', 'Destination configuration' if $o{page} eq 'dest';
      a href => '/talkback', 'Talkback configuration' if $o{page} eq 'talkback';
-     a href => '/module', 'Module configuration' if $o{page} eq 'module';
+     a href => '/module', 'Module configuration' if $o{page} eq 'module' || $o{page} eq 'modulerouting';
      if($o{section}) {
        lit " &raquo; ";
        a href => "/module/$o{section}", "Module $o{section}";
+       if($o{page} eq 'modulerouting') {
+         lit " &raquo; ";
+         a href => "/module/$o{section}/route", 'Routing';
+       }
      }
      a href => '/module/assign', 'Module assignment' if $o{page} eq 'moduleassign';
     end;
