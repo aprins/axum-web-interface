@@ -16,7 +16,7 @@ sub _channels {
   return shift->dbAll(q|SELECT s.addr, a.active, s.slot_nr, g.channel, a.name
     FROM slot_config s
     JOIN addresses a ON a.addr = s.addr
-    JOIN generate_series(1,32) AS g(channel) ON s.input_ch_cnt >= g.channel
+    JOIN generate_series(1,32) AS g(channel) ON s.output_ch_cnt >= g.channel
     WHERE output_ch_cnt > 0
     ORDER BY a.name, g.channel
   |);
