@@ -27,6 +27,11 @@ td    { background-color: #f0f0f0; border-left: none; border-right: 1px solid #c
 th    { border-left: 1px solid #e5e5e5; border-right: 1px solid #a5a5a5; padding: 0px 5px; height: 20px; font-weight: bold; background: url(/images/table_head.png); }
 tr.inactive th { color: #999 }
 tr.inactive a { color: #aaf }
+tr.inactive td { color: #999 }
+tr.empty th { border: none; height: 20px; font-weight: bold; background: none; }
+th.inactive { color: #999 }
+td.inactive { color: #999 }
+td.inactive a { color: #aaf }
 
 #input_obj { padding: 3px; background-color: #fff; border: 1px solid #aaa }
 
