@@ -20,7 +20,8 @@ my @mbn_types = ('no data', 'unsigned int', 'signed int', 'state', 'octet string
 sub list {
   my $self = shift;
 
-  my $cards = $self->dbAll('SELECT a.addr, a.name, s.slot_nr, s.input_ch_cnt, s.output_ch_cnt, a.active
+  my $cards = $self->dbAll('SELECT a.addr, a.name, s.slot_nr, s.input_ch_cnt, s.output_ch_cnt, a.active,
+    (SELECT COUNT(*) FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major) AS objects
     FROM slot_config s JOIN addresses a ON a.addr = s.addr ORDER BY s.slot_nr');
 
   $self->htmlHeader(title => 'Rack configuration', page => 'rack');
@@ -42,7 +43,11 @@ sub list {
       td $c->{input_ch_cnt};
       td $c->{output_ch_cnt};
       td;
-       a href => sprintf('/rack/%08x', $c->{addr}); lit 'configure &raquo;'; end;
+       if($c->{objects}) {
+         a href => sprintf('/rack/%08x', $c->{addr}); lit 'configure &raquo;'; end;
+       } else {
+         a href => '#', class => 'off', 'no objects';
+       }
       end;
      end;
    }
