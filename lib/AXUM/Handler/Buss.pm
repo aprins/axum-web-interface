@@ -23,9 +23,9 @@ sub _col {
     global_reset => [0, 'yes', 'no'  ],
     interlock    => [0, 'yes', 'no'  ],
     on_off       => [1, 'On',  'Off' ],
-    pre_on       => [1, 'Pre', 'Post'],
-    pre_level    => [1, 'Pre', 'Post'],
-    pre_balance  => [1, 'Pre', 'Post'],
+    pre_on       => [0, 'Pre', 'Post'],
+    pre_level    => [0, 'Pre', 'Post'],
+    pre_balance  => [0, 'Pre', 'Post'],
   );
 
   if($booleans{$n}) {
