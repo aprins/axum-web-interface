@@ -36,7 +36,11 @@ sub htmlHeader {
        a href => '/module', 'Module configuration';
        if($o{section}) {
          lit " &raquo; ";
-         a href => "/module/$o{section}/route", 'Routing';
+         a href => "/module/$o{section}", "Module $o{section}";
+         if($o{page} eq 'modulerouting') {
+           lit " &raquo; ";
+           a href => "/module/$o{section}/route", 'Routing';
+         }
        }
      }
      a href => '/module/assign', 'Module assignment' if $o{page} eq 'moduleassign';

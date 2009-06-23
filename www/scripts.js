@@ -196,6 +196,59 @@ function conf_eq(obj, item) {
 }
 
 
+function conf_func(addr, nr, f1, f2, f3, sensor, actuator, obj) {
+  var i;var l;var o;
+  var d = create_input(obj, function(f) {
+    l = document.getElementById('func_main').getElementsByTagName('select')[0];
+    f1 = l.options[l.selectedIndex].value;
+    l = document.getElementById('func_'+f1);
+    if(!l) {
+      f2 = f3 = 0;
+    } else {
+      l = l.getElementsByTagName('select');
+      f2 = f1 == 4 ? 0 : l[0].options[l[0].selectedIndex].value;
+      f3 = l[f1==4?0:1].options[l[f1==4?0:1].selectedIndex].value;
+    }
+    while(obj.nodeName.toLowerCase() != 'td')
+      obj = obj.parentNode;
+    ajax('/ajax/setfunc?addr='+addr+';nr='+nr
+        +';function='+f1+','+f2+','+f3+';sensor='+sensor+';actuator='+actuator, function(h) {
+      obj.innerHTML = h.responseText;
+      remove_input(input_obj);
+    });
+  });
+  if(!d) return false;
+  d.innerHTML = 'loading function list...';
+  ajax('/ajax/func?sensor='+sensor+';actuator='+actuator, function(h) {
+    d.innerHTML = h.responseText + '<input type="submit" value="Save" class="button" />';
+    l = d.getElementsByTagName('div');
+    for(i=0; i<l.length; i++)
+      if(l[i].id != 'func_main' && l[i].id != 'func_'+f1)
+        l[i].className = 'hidden';
+    l = document.getElementById('func_main').getElementsByTagName('select')[0];
+    for(i=0; i<l.options.length; i++)
+      l.options[i].selected = l.options[i].value == f1;
+    l.onchange = function() {
+      f1 = this.options[this.selectedIndex].value;
+      l = d.getElementsByTagName('div');
+      for(i=0; i<l.length; i++)
+        l[i].className = l[i].id != 'func_main' && l[i].id != 'func_'+f1 ? 'hidden' : '';
+    };
+    l = document.getElementById('func_'+f1);
+    if(l) {
+      l = l.getElementsByTagName('select');
+      o = f1 == 4 ? l[0] : l[1];
+      for(i=0; i<o.options.length; i++)
+        o.options[i].selected = o[i].value == f3;
+      if(f1 != 4)
+        for(i=0,o=l[0].options; i<o.length; i++)
+          o[i].selected = o[i].value == f2;
+    }
+  });
+  return false;
+}
+
+
 function exp_over() {
   var el = this.abbr ? this : document.getElementById(this.className);
   if(el.over)

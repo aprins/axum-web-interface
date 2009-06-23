@@ -1,9 +1,9 @@
 * { margin: 0; padding: 0; font-family: "Lucida Grande", "Lucida", "Verdana", sans-serif }
 body { background: url("/images/bg.png"); margin: 0px; font-size: 13px; }
 a { color: #00f; }
-a.off, tr.inactive a.off { color: #bbb!important; }
+td.off, a.off, tr.inactive a.off { color: #bbb!important; }
 img { border: 0 }
-.hidden { display: none }
+.hidden { display: none!important }
 
 #header       { position: absolute; left: 60px; top:    0; right: 60px; height: 60px; background: url("images/bg_top.png") }
 #header_left  { position: absolute; left:    0; top:    0; width: 60px; height: 60px; background: url("images/bg_topleft.png") }
@@ -34,6 +34,7 @@ td.inactive { color: #999 }
 td.inactive a { color: #aaf }
 
 #input_obj { padding: 3px; background-color: #fff; border: 1px solid #aaa }
+#input_obj div { display: inline }
 
 input.text { border: 1px solid #666; background-color: #eee }
 input.button { border: 1px solid #666; background-color: #bbb }
@@ -45,6 +46,7 @@ p.navigate a { margin-right: 5px }
 p.navigate a.sel { text-decoration: none; color: #000 }
 
 #eq_table td { padding: 0 5px; background-color: #fff }
-#eq_table select { height: 20px; border: 1px solid #666; background-color: #eee }
+#input_obj select, #eq_table select { height: 20px; border: 1px solid #666; background-color: #eee }
+#input_obj option, #eq_table option { padding: 0 3px }
 #eq_table input.text { text-align: right }
 
