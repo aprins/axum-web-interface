@@ -91,8 +91,9 @@ sub source {
     $self->dbExec('DELETE FROM src_config WHERE number = ?', $f->{del});
     return $self->resRedirect('/source');
   }
-
-  my $mb = $self->dbAll(q|SELECT number, label FROM monitor_buss_config ORDER BY number|);
+  
+  my $mb = $self->dbAll('SELECT number, label, number <= dsp_count()*4 AS active
+    FROM monitor_buss_config ORDER BY number');
 
   my @cols = ((map "redlight$_", 1..8), (map "monitormute$_", 1..16));
   my $src = $self->dbAll(q|SELECT number, label, input1_addr, input1_sub_ch, input2_addr,
@@ -126,7 +127,7 @@ sub source {
     th 'Pad';
     th 'Gain';
     th $_ for (1..8);
-    th abbr => $_->{label}, id => "exp_monitormute$_->{number}", $_->{number}%10
+    th abbr => $_->{label}, $_->{active} ? ():(class => 'inactive'), id => "exp_monitormute$_->{number}", $_->{number}%10
       for (@$mb);
     th '';
    end;
@@ -140,8 +141,8 @@ sub source {
       for (qw|phantom pad gain|, map "redlight$_", 1..8) {
         td; _col $_, $s; end;
       }
-      for (map "monitormute$_", 1..16) {
-        td class => "exp_$_"; _col $_, $s; end;
+      for (@$mb) {
+        td $_->{active} ? (class => "exp_monitormute$_->{number}") : (class => "exp_monitormute$_->{number}, inactive"); _col "monitormute$_->{number}", $s; end;
       }
       td;
        a href => '/source?del='.$s->{number}, title => 'Delete';
