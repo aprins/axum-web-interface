@@ -92,8 +92,7 @@ sub conf {
    Tr;
     th 'Nr.';
     th 'Description';
-    th 'Sensor';
-    th 'Actuator';
+    th 'Type';
     th 'Default';
     th 'Function';
    end;
@@ -101,8 +100,7 @@ sub conf {
      Tr;
       th $o->{number};
       td $o->{description};
-      td !$o->{sensor_type}   ? (class => 'off') : (), $mbn_types[$o->{sensor_type}];
-      td !$o->{actuator_type} ? (class => 'off') : (), $mbn_types[$o->{actuator_type}];
+      td join ' + ', $o->{sensor_type} ? 'sensor' : (), $o->{actuator_type} ? 'actuator' : ();
       td $o->{data} || $o->{actuator_def}; # TODO: make configurable, etc
       td;
        _funcname $self, $addr, $o->{number},
