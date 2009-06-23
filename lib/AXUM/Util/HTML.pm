@@ -32,17 +32,22 @@ sub htmlHeader {
      a href => '/externsrc', 'Extern source configuration' if $o{page} eq 'externsrc';
      a href => '/dest', 'Destination configuration' if $o{page} eq 'dest';
      a href => '/talkback', 'Talkback configuration' if $o{page} eq 'talkback';
-     a href => '/module', 'Module configuration' if $o{page} eq 'module' || $o{page} eq 'modulerouting';
-     if($o{section}) {
-       lit " &raquo; ";
-       a href => "/module/$o{section}", "Module $o{section}";
-       if($o{page} eq 'modulerouting') {
+     if ($o{page} eq 'module' || $o{page} eq 'modulerouting') {
+       a href => '/module', 'Module configuration';
+       if($o{section}) {
          lit " &raquo; ";
          a href => "/module/$o{section}/route", 'Routing';
        }
      }
      a href => '/module/assign', 'Module assignment' if $o{page} eq 'moduleassign';
      a href => '/globalconf', 'Global configuration' if $o{page} eq 'globalconf';
+     if($o{page} eq 'rack' || $o{page} eq 'objects') {
+       a href => '/rack', 'Rack configuration';
+       if($o{section}) {
+         lit " &raquo; ";
+         a href => "/rack/$o{section}", "Address $o{section}";
+       }
+     }
     end;
     div id => 'content';
 }
