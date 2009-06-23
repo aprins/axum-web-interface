@@ -113,7 +113,7 @@ sub dest {
     th 'Output 1 (left)';
     th 'Output 2 (right)';
     th 'Level';
-    th 'Signal from';
+    th 'Default signal';
     th 'N-1 from';
     th '';
    end;
