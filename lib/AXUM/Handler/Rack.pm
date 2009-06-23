@@ -8,7 +8,8 @@ use YAWF ':html';
 
 YAWF::register(
   qr{rack} => \&list,
-  qr{rack/([0-9a-f]{8})} => \&conf,
+  qr{surface} => \&listui,
+  qr{(surface|rack)/([0-9a-f]{8})} => \&conf,
   qr{ajax/func} => \&funclist,
   qr{ajax/setfunc} => \&setfunc,
 );
@@ -16,6 +17,47 @@ YAWF::register(
 
 my @mbn_types = ('no data', 'unsigned int', 'signed int', 'state', 'octet string', 'float', 'bit string');
 
+sub listui {
+  my $self = shift;
+
+  my $cards = $self->dbAll('SELECT a.addr, a.name, a.active, a.parent, 
+    (SELECT COUNT(*) FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major) AS objects,
+    (SELECT number FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major AND t.description = \'Slot number\') AS slot_obj,
+    (SELECT name FROM addresses b WHERE (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id) AS parent_name
+    FROM slot_config s
+    RIGHT JOIN addresses a ON a.addr = s.addr WHERE s.addr IS NULL AND ((a.parent).man != 1 OR (a.parent).prod != 12) AND NOT ((a.id).man=(a.parent).man AND (a.id).prod=(a.parent).prod AND (a.id).id=(a.parent).id)
+    ORDER BY NULLIF((a.parent).man, 0), (a.parent).prod, (a.parent).id, NOT a.active, (a.id).man, (a.id).prod, (a.id).id');
+  $self->htmlHeader(title => 'Surface configuration', page => 'surface');
+  table;
+   Tr; th colspan => 3, 'Surface configuration'; end;
+   Tr;
+    th 'MambaNet Address';
+    th 'Node name';
+    th 'Settings';
+   end;
+   my $prev_parent='';
+   for my $c (@$cards) {
+     if($c->{parent} ne $prev_parent) {
+       Tr class => 'empty'; th colspan => 3; end;
+       Tr; th colspan => 3, !$c->{parent_name} ? 'No parent' : "$c->{parent_name} $c->{parent}"; end;
+       $prev_parent = $c->{parent};
+     }
+
+     Tr !$c->{active} ? (class => 'inactive') : ();
+      td sprintf '%08X', $c->{addr};
+      td $c->{name};
+      td;
+       if($c->{objects}) {
+         a href => sprintf('/surface/%08x', $c->{addr}); lit 'configure &raquo;'; end;
+       } else {
+         a href => '#', class => 'off', 'no objects';
+       }
+      end;
+     end;
+   }
+  end;
+  $self->htmlFooter;
+}
 
 sub list {
   my $self = shift;
@@ -75,9 +117,18 @@ sub _funcname {
   end;
 }
 
+sub _default {
+  my($addr, $row) = @_;
+
+  return if !$row->{actuator_type} || ($row->{data} || $row->{actuator_def}) !~ /(\d+(?:\.\d+)?)/;
+#  my $v = $1;
+#  a href => '#', onclick => sprintf('return conf_number("", "setdefault", %d, "%s", %f, this)', $row->{number}, $addr, $row->{}
+#    !$row->{data} ? (class => 'off') : (), $v;
+}
+
 
 sub conf {
-  my($self, $addr) = @_;
+  my($self, $type, $addr) = @_;
   $addr = uc $addr;
 
   my $objects = $self->dbAll('
@@ -91,7 +142,7 @@ sub conf {
   );
   my $buss = [ map $_->{label}, @{$self->dbAll('SELECT label FROM buss_config ORDER BY number')} ];
 
-  $self->htmlHeader(page => 'objects', section => $addr, title => "Object configuration for $addr");
+  $self->htmlHeader(page => $type, section => $addr, title => "Object configuration for $addr");
   table;
    Tr; th colspan => 6, "Object configuration for $addr"; end;
    Tr;
@@ -106,7 +157,7 @@ sub conf {
       th $o->{number};
       td $o->{description};
       td join ' + ', $o->{sensor_type} ? 'sensor' : (), $o->{actuator_type} ? 'actuator' : ();
-      td $o->{data} || $o->{actuator_def}; # TODO: make configurable, etc
+      td; _default $addr, $o; end;
       td;
        _funcname $self, $addr, $o->{number},
          $o->{func} && $o->{func} =~ /(\d+),(\d+),(\d+)/ ? ($1, $2, $3) : (-1,0,0),

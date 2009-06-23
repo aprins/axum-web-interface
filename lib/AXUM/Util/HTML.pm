@@ -45,7 +45,14 @@ sub htmlHeader {
      }
      a href => '/module/assign', 'Module assignment' if $o{page} eq 'moduleassign';
      a href => '/globalconf', 'Global configuration' if $o{page} eq 'globalconf';
-     if($o{page} eq 'rack' || $o{page} eq 'objects') {
+     if($o{page} eq 'surface') {
+       a href => '/surface', 'Surface configuration';
+       if($o{section}) {
+         lit " &raquo; ";
+         a href => "/surface/$o{section}", "Address $o{section}";
+       }
+     }
+     if($o{page} eq 'rack') {
        a href => '/rack', 'Rack configuration';
        if($o{section}) {
          lit " &raquo; ";
