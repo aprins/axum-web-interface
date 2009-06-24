@@ -12,15 +12,17 @@ YAWF::register(
   qr{(surface|rack)/([0-9a-f]{8})} => \&conf,
   qr{ajax/func} => \&funclist,
   qr{ajax/setfunc} => \&setfunc,
+  qr{ajax/setdefault} => \&setdefault,
 );
 
 
 my @mbn_types = ('no data', 'unsigned int', 'signed int', 'state', 'octet string', 'float', 'bit string');
 
+
 sub listui {
   my $self = shift;
 
-  my $cards = $self->dbAll('SELECT a.addr, a.name, a.active, a.parent, 
+  my $cards = $self->dbAll('SELECT a.addr, a.name, a.active, a.parent,
     (SELECT COUNT(*) FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major) AS objects,
     (SELECT number FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major AND t.description = \'Slot number\') AS slot_obj,
     (SELECT name FROM addresses b WHERE (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id) AS parent_name
@@ -58,6 +60,7 @@ sub listui {
   end;
   $self->htmlFooter;
 }
+
 
 sub list {
   my $self = shift;
@@ -120,10 +123,12 @@ sub _funcname {
 sub _default {
   my($addr, $row) = @_;
 
-  return if !$row->{actuator_type} || ($row->{data} || $row->{actuator_def}) !~ /(\d+(?:\.\d+)?)/;
-#  my $v = $1;
-#  a href => '#', onclick => sprintf('return conf_number("", "setdefault", %d, "%s", %f, this)', $row->{number}, $addr, $row->{}
-#    !$row->{data} ? (class => 'off') : (), $v;
+  return if !$row->{actuator_type};
+  my $v = 0;                   # This regex doesn't correctly handle comma's or quotes in strings
+  $v = $1 if defined $row->{actuator_def} && $row->{actuator_def} =~ /\(,*([^,]+),*\)/;
+  $v = $1 if defined $row->{data} && $row->{data} =~ /\(,*([^,]+),*\)/;
+  a href => '#', onclick => sprintf('return conf_text("setdefault", %d, "%s", %f, this)', $row->{number}, $addr, $1),
+    !$row->{data} ? (class => 'off') : (), $1;
 }
 
 
@@ -281,6 +286,44 @@ sub setfunc {
   }
   _funcname $self, $f->{addr}, $f->{nr}, $f1, $f2, $f3, $f->{sensor}, $f->{actuator},
     [ map $_->{label}, @{$self->dbAll('SELECT label FROM buss_config ORDER BY number')} ];
+}
+
+
+sub setdefault {
+  my $self = shift;
+
+  my $f = $self->formValidate(
+    { name => 'item', template => 'int' },
+    { name => 'field', regex => [qr/^[0-9a-f]{8}$/i] }, # = address
+  );
+  return if $f->{_err};
+  my $v = $self->formValidate({name => $f->{field}});
+  return if $v->{_err};
+  $v = $v->{$f->{field}};
+
+  my $obj = $self->dbRow('
+      SELECT t.number, t.actuator_type, t.actuator_def, d.data
+      FROM templates t
+      JOIN addresses a ON (t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major)
+      LEFT JOIN defaults d ON (d.addr = a.addr AND t.number = d.object)
+      WHERE a.addr = ? AND t.number = ?',
+    oct "0x$f->{field}", $f->{item}
+  );
+  return 404 if !$obj->{actuator_type};
+
+  my $dat = $obj->{actuator_type} <= 3 ? "($v,,,)" :
+            $obj->{actuator_type} == 4 ? qq|(,,,$v)| :
+            $obj->{actuator_type} == 5 ? "(,$v,,)" : qq|(,,$v,)|;
+
+  # TODO: compare value with actuator_def? check min-max?
+  $self->dbExec(defined $obj->{data}
+    ? 'UPDATE defaults SET data = ? WHERE addr = ? AND object = ?'
+    : 'INSERT INTO defaults (data, addr, object) VALUES (?, ?, ?)',
+    $dat, oct "0x$f->{field}", $f->{item}
+  );
+
+  $obj->{data} = $dat;
+  _default $f->{field}, $obj;
 }
 
 
