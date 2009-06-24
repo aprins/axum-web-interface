@@ -25,29 +25,37 @@ sub listui {
   my $cards = $self->dbAll('SELECT a.addr, a.name, a.active, a.parent,
     (SELECT COUNT(*) FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major) AS objects,
     (SELECT number FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major AND t.description = \'Slot number\') AS slot_obj,
-    (SELECT name FROM addresses b WHERE (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id) AS parent_name
+    (SELECT name FROM addresses b WHERE (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id) AS parent_name,
+    (SELECT COUNT(*) FROM node_config n WHERE a.addr = n.addr) AS config_cnt,
+    (SELeCT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt
     FROM slot_config s
     RIGHT JOIN addresses a ON a.addr = s.addr WHERE s.addr IS NULL AND ((a.parent).man != 1 OR (a.parent).prod != 12) AND NOT ((a.id).man=(a.parent).man AND (a.id).prod=(a.parent).prod AND (a.id).id=(a.parent).id)
     ORDER BY NULLIF((a.parent).man, 0), (a.parent).prod, (a.parent).id, NOT a.active, (a.id).man, (a.id).prod, (a.id).id');
   $self->htmlHeader(title => 'Surface configuration', page => 'surface');
   table;
-   Tr; th colspan => 3, 'Surface configuration'; end;
-   Tr;
-    th 'MambaNet Address';
-    th 'Node name';
-    th 'Settings';
-   end;
+   Tr; th colspan => 5, 'Surface configuration'; end;
    my $prev_parent='';
    for my $c (@$cards) {
      if($c->{parent} ne $prev_parent) {
-       Tr class => 'empty'; th colspan => 3; end;
-       Tr; th colspan => 3, !$c->{parent_name} ? 'No parent' : "$c->{parent_name} $c->{parent}"; end;
+       if ($prev_parent) {
+         Tr class => 'empty'; th colspan => 5; end;
+       }
+       Tr; th colspan => 5, !$c->{parent_name} ? 'No parent' : "$c->{parent_name} $c->{parent}"; end;
+       Tr;
+         th 'MambaNet Address';
+         th 'Node name';
+         th 'Default';
+         th 'Config';
+         th 'Settings';
+       end;
        $prev_parent = $c->{parent};
      }
 
      Tr !$c->{active} ? (class => 'inactive') : ();
       td sprintf '%08X', $c->{addr};
       td $c->{name};
+      td !$c->{default_cnt} ? (class => 'inactive') : (), $c->{default_cnt};
+      td !$c->{config_cnt} ? (class => 'inactive') : (), $c->{config_cnt};
       td;
        if($c->{objects}) {
          a href => sprintf('/surface/%08x', $c->{addr}); lit 'configure &raquo;'; end;
@@ -66,18 +74,22 @@ sub list {
   my $self = shift;
 
   my $cards = $self->dbAll('SELECT a.addr, a.name, s.slot_nr, s.input_ch_cnt, s.output_ch_cnt, a.active,
-    (SELECT COUNT(*) FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major) AS objects
+    (SELECT COUNT(*) FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major) AS objects,
+    (SELECT COUNT(*) FROM node_config n WHERE a.addr = n.addr) AS config_cnt,
+    (SELECT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt
     FROM slot_config s JOIN addresses a ON a.addr = s.addr ORDER BY s.slot_nr');
 
   $self->htmlHeader(title => 'Rack configuration', page => 'rack');
   table;
-   Tr; th colspan => 6, 'Rack configuration'; end;
+   Tr; th colspan => 8, 'Rack configuration'; end;
    Tr;
     th 'Slot';
     th 'MambaNet Address';
     th 'Card name';
     th 'Inputs';
     th 'Outputs';
+    th 'Default';
+    th 'Config';
     th 'Settings';
    end;
    for my $c (@$cards) {
@@ -85,8 +97,10 @@ sub list {
       th $c->{slot_nr};
       td sprintf '%08X', $c->{addr};
       td $c->{name};
-      td $c->{input_ch_cnt};
-      td $c->{output_ch_cnt};
+      td !$c->{input_ch_cnt} ? (class => 'inactive') : (), $c->{input_ch_cnt};
+      td !$c->{output_ch_cnt} ? (class => 'inactive') : (), $c->{output_ch_cnt};
+      td !$c->{default_cnt} ? (class => 'inactive') : (), $c->{default_cnt};
+      td !$c->{config_cnt} ? (class => 'inactive') : (), $c->{config_cnt};
       td;
        if($c->{objects}) {
          a href => sprintf('/rack/%08x', $c->{addr}); lit 'configure &raquo;'; end;
