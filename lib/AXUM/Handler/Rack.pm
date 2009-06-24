@@ -142,20 +142,13 @@ sub conf {
   );
   my $buss = [ map $_->{label}, @{$self->dbAll('SELECT label FROM buss_config ORDER BY number')} ];
 
-  my $name;
-  if($type eq 'rack') {
-    $name = $self->dbAll('SELECT a.name, s.slot_nr FROM addresses a 
-                             JOIN slot_config s ON s.addr = a.addr 
-                             WHERE a.addr = ?', oct "0x$addr");
-  }
-  else {
-    $name = $self->dbAll('SELECT a.name FROM addresses a 
-                             WHERE a.addr = ?', oct "0x$addr");
-  }
+  my $name = $self->dbRow($type eq 'rack'
+    ? 'SELECT a.name, s.slot_nr FROM addresses a JOIN slot_config s ON s.addr = a.addr WHERE a.addr = ?'
+    : 'SELECT a.name FROM addresses a WHERE a.addr = ?', oct "0x$addr");
 
   $self->htmlHeader(page => $type, section => $addr, title => "Object configuration for $addr");
   table;
-   Tr; th colspan => 6, "Object configuration for @$name[0]->{name}".($type eq 'rack' ? (" (slot @$name[0]->{slot_nr})") : ()); end;
+   Tr; th colspan => 6, "Object configuration for $name->{name}".($type eq 'rack' ? " (slot $name->{slot_nr})" : ''); end;
    Tr;
     th 'Nr.';
     th 'Description';
