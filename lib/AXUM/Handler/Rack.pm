@@ -36,11 +36,12 @@ sub listui {
    Tr; th colspan => 5, 'Surface configuration'; end;
    my $prev_parent='';
    for my $c (@$cards) {
+     $c->{parent} =~ s/\((\d+),(\d+),(\d+)\)/sprintf($1?'%04X:%04X:%04X':'-', $1, $2, $3)/e;
      if($c->{parent} ne $prev_parent) {
        if ($prev_parent) {
          Tr class => 'empty'; th colspan => 5; end;
        }
-       Tr; th colspan => 5, !$c->{parent_name} ? 'No parent' : "$c->{parent_name} $c->{parent}"; end;
+       Tr; th colspan => 5, !$c->{parent_name} ? 'No parent' : "$c->{parent} ($c->{parent_name})"; end;
        Tr;
          th 'MambaNet Address';
          th 'Node name';
