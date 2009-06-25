@@ -126,7 +126,8 @@ function conf_text(page, item, field, value, obj) {
     conf_set(page, item, field, f.getElementsByTagName('input')[0].value, obj);
   });
   if(!d) return false;
-  d.innerHTML = '<input type="text" value="'+qq(value)+'" size="10" class="text">'
+  var size = value.length > 10 ? value.length+5 : 10;
+  d.innerHTML = '<input type="text" value="'+qq(value)+'" size="'+size+'" class="text">'
     +'<input type="submit" value="Save" class="button" />';
   d = d.getElementsByTagName('input')[0];
   d.focus();

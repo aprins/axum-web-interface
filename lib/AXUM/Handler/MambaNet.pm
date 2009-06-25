@@ -8,7 +8,20 @@ use YAWF ':html';
 
 YAWF::register(
   qr{mambanet} => \&list,
+  qr{ajax/mambanet} => \&ajax,
 );
+
+
+sub _col {
+  my($n, $c) = @_;
+  my $v = $c->{$n};
+
+  if($n eq 'name') {
+    (my $jsval = $v) =~ s/\\/\\\\/g;
+    $v =~ s/"/\\"/g;
+    a href => '#', onclick => sprintf('return conf_text("mambanet", "%s", "name", "%s", this)', $c->{addr}, $jsval), $v;
+  }
+}
 
 
 sub list {
@@ -47,7 +60,7 @@ sub list {
      Tr !$c->{active} ? (class => 'inactive') : ();
       td sprintf '%08X', $c->{addr};
       td $c->{id};
-      td $c->{name};
+      td; _col 'name', $c; end;
       td sprintf '%08X', $c->{engine_addr};
       td $c->{parent};
       td !$c->{default_cnt} ? (class => 'inactive') : (), $c->{default_cnt};
@@ -63,6 +76,25 @@ sub list {
    }
   end;
   $self->htmlFooter;
+}
+
+
+sub ajax {
+  my $self = shift;
+
+  my $f = $self->formValidate(
+    { name => 'field', template => 'asciiprint' },
+    { name => 'item', template => 'int' },
+    { name => 'name', required => 0, maxlength => 32, minlength => 1 },
+  );
+  return 404 if $f->{_err};
+
+  my %set;
+  defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
+    for(qw|name|);
+
+  $self->dbExec('UPDATE addresses !H WHERE addr = ?', \%set, $f->{item}) if keys %set;
+  _col $f->{field}, { addr => $f->{item}, $f->{field} => $f->{$f->{field}} };
 }
 
 
