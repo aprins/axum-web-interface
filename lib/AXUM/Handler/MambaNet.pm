@@ -25,7 +25,7 @@ sub list {
     (SELECT COUNT(*) FROM node_config n WHERE a.addr = n.addr) AS config_cnt,
     (SELECT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt
     FROM addresses a
-    JOIN addresses b ON (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id
+    LEFT JOIN addresses b ON (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id
     ORDER BY a.addr');
 
   $self->htmlHeader(title => 'MambaNet configuration', page => 'mambanet');
