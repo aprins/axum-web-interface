@@ -16,10 +16,12 @@ sub _col {
   my($n, $c) = @_;
   my $v = $c->{$n};
 
-  if($n eq 'name') {
+  if($n eq 'name' || $n eq 'engine_addr') {
+    $v = sprintf '%08X', $v if $n eq 'engine_addr';
     (my $jsval = $v) =~ s/\\/\\\\/g;
     $v =~ s/"/\\"/g;
-    a href => '#', onclick => sprintf('return conf_text("mambanet", "%s", "name", "%s", this)', $c->{addr}, $jsval), $v;
+    a href => '#', onclick => sprintf('return conf_text("mambanet", "%s", "%s", "%s", this)', $c->{addr}, $n, $jsval),
+      $n eq 'engine_addr' && $v eq '00000000' ? (class => 'off') : (), $v;
   }
 }
 
@@ -61,7 +63,7 @@ sub list {
       td sprintf '%08X', $c->{addr};
       td $c->{id};
       td; _col 'name', $c; end;
-      td sprintf '%08X', $c->{engine_addr};
+      td; _col 'engine_addr', $c; end;
       td $c->{parent};
       td !$c->{default_cnt} ? (class => 'inactive') : (), $c->{default_cnt};
       td !$c->{config_cnt} ? (class => 'inactive') : (), $c->{config_cnt};
@@ -86,12 +88,14 @@ sub ajax {
     { name => 'field', template => 'asciiprint' },
     { name => 'item', template => 'int' },
     { name => 'name', required => 0, maxlength => 32, minlength => 1 },
+    { name => 'engine_addr', required => 0, regex => [qr/^[0-9a-f]{8}$/i] },
   );
   return 404 if $f->{_err};
 
   my %set;
   defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
     for(qw|name|);
+  $set{"engine_addr = ?"} = oct "0x$f->{engine_addr}" if defined $f->{engine_addr};
 
   $self->dbExec('UPDATE addresses !H WHERE addr = ?', \%set, $f->{item}) if keys %set;
   _col $f->{field}, { addr => $f->{item}, $f->{field} => $f->{$f->{field}} };
