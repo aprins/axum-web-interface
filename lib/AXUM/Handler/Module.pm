@@ -265,7 +265,7 @@ sub ajax {
 
   my %set;
   defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
-    for(@booleans, qw|source_a source_b mod_level lc_frequency gain dyn_amount|);
+    for(@booleans, qw|source_a source_b insert_source mod_level lc_frequency gain dyn_amount|);
 
   $self->dbExec('UPDATE module_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
   _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
