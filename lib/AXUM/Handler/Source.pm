@@ -142,7 +142,7 @@ sub source {
         td; _col $_, $s; end;
       }
       for (@$mb) {
-        td $_->{active} ? (class => "exp_monitormute$_->{number}") : (class => "exp_monitormute$_->{number}, inactive"); _col "monitormute$_->{number}", $s; end;
+        td $_->{active} ? (class => "exp_monitormute$_->{number}") : (class => "exp_monitormute$_->{number} inactive"); _col "monitormute$_->{number}", $s; end;
       }
       td;
        a href => '/source?del='.$s->{number}, title => 'Delete';

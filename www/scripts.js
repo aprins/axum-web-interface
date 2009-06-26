@@ -251,7 +251,8 @@ function conf_func(addr, nr, f1, f2, f3, sensor, actuator, obj) {
 
 
 function exp_over() {
-  var el = this.abbr ? this : document.getElementById(this.className);
+  var str_array = this.className.split(' ');
+  var el = this.abbr ? this : document.getElementById(str_array[0]);
   if(el.over)
     return;
   el.over = 1;
@@ -261,7 +262,8 @@ function exp_over() {
   el.innerHTML = tmp;
 }
 function exp_out() {
-  var el = this.abbr ? this : document.getElementById(this.className);
+  var str_array = this.className.split(' ');
+  var el = this.abbr ? this : document.getElementById(str_array[0]);
   tmp = el.abbr;
   el.abbr = el.innerHTML;
   el.innerHTML = tmp;
