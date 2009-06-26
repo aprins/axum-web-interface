@@ -24,7 +24,7 @@ sub _col {
   }
   if($n eq 'level_reserve') {
     a href => '#', onclick => sprintf('return conf_select("globalconf", 0, "level_reserve", %d, this, "reslevels")', $v),
-      sprintf '%d dB', $v;
+      sprintf '%d dB', 10-$v;
   }
 }
 
@@ -39,7 +39,7 @@ sub conf {
    option value => $_, sprintf '%.1f kHz', $_/1000 for (32000, 44100, 48000);
   end; end;
   div id => 'reslevels', class => 'hidden'; Select;
-   option value => $_, "$_ dB", for (0, 10);
+   option value => 10-$_, "$_ dB", for (0, 10);
   end; end;
   table;
    Tr; th colspan => 2, 'Global configuration'; end;
