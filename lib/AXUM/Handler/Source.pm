@@ -34,7 +34,7 @@ sub _col {
   }
   if($n eq 'gain') {
     a href => '#', onclick => sprintf('return conf_level("source", %d, "gain", %f, this)', $d->{number}, $v),
-      $v == 0 ? (class => 'off') : (), sprintf '%.1f dB', $v;
+      $v == 30 ? (class => 'off') : (), sprintf '%.1f dB', $v;
   }
   if($n eq 'phantom' || $n eq 'pad') {
     a href => '#', onclick => sprintf('return conf_set("source", %d, "%s", "%s", this)', $d->{number}, $n, $v?0:1),
