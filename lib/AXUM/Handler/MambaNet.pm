@@ -24,6 +24,14 @@ sub _col {
     a href => '#', onclick => sprintf('return conf_text("mambanet", "%s", "%s", "%s", this)', $c->{addr}, $n, $jsval),
       $n eq 'engine_addr' && $v eq '00000000' ? (class => 'off') : (), $v;
   }
+  elsif ($n eq 'id') {
+    my $first_id = $v;
+    my $unique_id = $v;
+    $first_id =~ s/(\w\w\w\w):(\w\w\w\w):(\w\w\w\w)/sprintf("%04X:%04X:", hex($1), hex($2))/e;
+    $unique_id =~ s/(\w\w\w\w):(\w\w\w\w):(\w\w\w\w)/sprintf("%04X", hex($3))/e;
+    lit $first_id;
+    a href => '#', $unique_id;
+  }
 }
 
 
@@ -62,7 +70,7 @@ sub list {
        for ('parent', 'id');
      Tr !$c->{active} ? (class => 'inactive') : ();
       td; _col 'addr', $c; end;
-      td $c->{id};
+      td style => "white-space: nowrap"; _col 'id', $c; end;
       td; _col 'name', $c; end;
       td; _col 'engine_addr', $c; end;
       td $c->{parent};
