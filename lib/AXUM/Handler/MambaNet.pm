@@ -1,4 +1,3 @@
-
 package AXUM::Handler::MambaNet;
 
 use strict;
@@ -27,10 +26,10 @@ sub _col {
   elsif ($n eq 'id') {
     my $first_id = $v;
     my $unique_id = $v;
-    $first_id =~ s/(\w\w\w\w):(\w\w\w\w):(\w\w\w\w)/sprintf("%04X:%04X:", hex($1), hex($2))/e;
-    $unique_id =~ s/(\w\w\w\w):(\w\w\w\w):(\w\w\w\w)/sprintf("%04X", hex($3))/e;
+    $first_id =~ s/(\w{4}):(\w{4}):(\w{4})/sprintf("%04X:%04X:", hex($1), hex($2))/e;
+    $unique_id =~ s/(\w{4}):(\w{4}):(\w{4})/sprintf("%04X", hex($3))/e;
     lit $first_id;
-    a href => '#', $unique_id;
+    a href => '#', onclick => sprintf('return conf_select("id", %d, "uid", %d, this, "uids")', 0, 0), $unique_id;
   }
 }
 
@@ -47,7 +46,8 @@ sub list {
 
   my $cards = $self->dbAll('SELECT a.addr, a.id, a.name, a.active, a.engine_addr, a.parent, b.name AS parent_name,
     (SELECT COUNT(*) FROM node_config n WHERE a.addr = n.addr) AS config_cnt,
-    (SELECT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt
+    (SELECT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt,
+    (SELECT COUNT(*) FROM addresses b WHERE (b.id).man = (a.id).man AND (b.id).prod = (a.id).prod AND NOT b.active AND a.active) AS conf_change
     FROM addresses a
     LEFT JOIN addresses b ON (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id
     ORDER BY a.addr');
@@ -70,7 +70,12 @@ sub list {
        for ('parent', 'id');
      Tr !$c->{active} ? (class => 'inactive') : ();
       td; _col 'addr', $c; end;
-      td style => "white-space: nowrap"; _col 'id', $c; end;
+      if (($c->{conf_change} != 0) and ($c->{default_cnt} or $c->{config_cnt})) {
+        td style => "white-space: nowrap"; _col 'id', $c; end;
+      }
+      else {
+        td $c->{id};
+      }
       td; _col 'name', $c; end;
       td; _col 'engine_addr', $c; end;
       td $c->{parent};
