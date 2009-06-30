@@ -25,24 +25,17 @@ sub _col {
       $n eq 'engine_addr' && $v eq '00000000' ? (class => 'off') : (), $v;
   }
   elsif ($n eq 'id') {
-    my $first_id = $v;
-    my $unique_id = $v;
-    $first_id =~ s/(\w{4}):(\w{4}):(\w{4})/sprintf("%04X:%04X:", hex($1), hex($2))/i;
-    $unique_id =~ s/(\w{4}):(\w{4}):(\w{4})/sprintf("%04X", hex($3))/i;
-    lit $first_id;
-    a href => '#', onclick => sprintf('return conf_id(%d,%d,%d,this)', 0, hex($1), hex($2)), $unique_id;
+    if (($c->{conf_change} != 0) and ($c->{default_cnt} or $c->{config_cnt})) {
+      (my $man = $c->{id})  =~ s/(\w{4}):(\w{4}):(\w{4})/$1/e;
+      (my $prod = $c->{id}) =~ s/(\w{4}):(\w{4}):(\w{4})/$2/e;
+      (my $uid = $c->{id})  =~ s/(\w{4}):(\w{4}):(\w{4})/$3/e;
+      txt  $man.":".$prod.":";
+      a href => '#', onclick => sprintf('return conf_id("%s", %d, %d, this)', $c->{addr}, hex($man), hex($prod)), $uid;
+    }
+    else {
+      txt $c->{id};
+    }
   }
-}
-
-sub _id_link {
-  my($self, $addr, $id) = @_;
-  (my $man = $id)  =~ s/(\w{4}):(\w{4}):(\w{4})/$1/e;
-  (my $prod = $id) =~ s/(\w{4}):(\w{4}):(\w{4})/$2/e;
-  (my $uid = $id)  =~ s/(\w{4}):(\w{4}):(\w{4})/$3/e;
-   txt  $man.":".$prod.":";
-   a href => '#', onclick => sprintf('return conf_id("%s", %d, %d, this)', $addr, hex($man), hex($prod));
-    txt $uid;
-   end;
 }
 
 sub list {
@@ -81,14 +74,7 @@ sub list {
        for ('parent', 'id');
      Tr !$c->{active} ? (class => 'inactive') : ();
       td; _col 'addr', $c; end;
-      if (($c->{conf_change} != 0) and ($c->{default_cnt} or $c->{config_cnt})) {
-        td style => "white-space: nowrap";
-         _id_link $self, sprintf("%08X", $c->{addr}), $c->{id};
-        end;
-      }
-      else {
-        td $c->{id};
-      }
+      td style => "white-space: nowrap"; _col 'id', $c; end;
       td; _col 'name', $c; end;
       td; _col 'engine_addr', $c; end;
       td $c->{parent};
@@ -145,7 +131,6 @@ sub id_list {
 
   # main select box
   div id => 'id_main'; Select;
-
    for my $id (@ids) {
      (my $id_text = $id->{id}) =~ s/\((\d+),(\d+),(\d+)\)/sprintf(" (%04X:%04X:%04X)", $1, $2, $3)/e;
      option value => $id->{uid}, $id->{name}.$id_text;
