@@ -8,6 +8,7 @@ use YAWF ':html';
 YAWF::register(
   qr{mambanet} => \&list,
   qr{ajax/mambanet} => \&ajax,
+  qr{ajax/id_list} => \&id_list,
 );
 
 
@@ -26,13 +27,23 @@ sub _col {
   elsif ($n eq 'id') {
     my $first_id = $v;
     my $unique_id = $v;
-    $first_id =~ s/(\w{4}):(\w{4}):(\w{4})/sprintf("%04X:%04X:", hex($1), hex($2))/e;
-    $unique_id =~ s/(\w{4}):(\w{4}):(\w{4})/sprintf("%04X", hex($3))/e;
+    $first_id =~ s/(\w{4}):(\w{4}):(\w{4})/sprintf("%04X:%04X:", hex($1), hex($2))/i;
+    $unique_id =~ s/(\w{4}):(\w{4}):(\w{4})/sprintf("%04X", hex($3))/i;
     lit $first_id;
-    a href => '#', onclick => sprintf('return conf_select("id", %d, "uid", %d, this, "uids")', 0, 0), $unique_id;
+    a href => '#', onclick => sprintf('return conf_id(%d,%d,%d,this)', 0, hex($1), hex($2)), $unique_id;
   }
 }
 
+sub _id_link {
+  my($self, $addr, $id) = @_;
+  (my $man = $id)  =~ s/(\w{4}):(\w{4}):(\w{4})/$1/e;
+  (my $prod = $id) =~ s/(\w{4}):(\w{4}):(\w{4})/$2/e;
+  (my $uid = $id)  =~ s/(\w{4}):(\w{4}):(\w{4})/$3/e;
+   txt  $man.":".$prod.":";
+   a href => '#', onclick => sprintf('return conf_id("%s", %d, %d, this)', $addr, hex($man), hex($prod));
+    txt $uid;
+   end;
+}
 
 sub list {
   my $self = shift;
@@ -71,7 +82,9 @@ sub list {
      Tr !$c->{active} ? (class => 'inactive') : ();
       td; _col 'addr', $c; end;
       if (($c->{conf_change} != 0) and ($c->{default_cnt} or $c->{config_cnt})) {
-        td style => "white-space: nowrap"; _col 'id', $c; end;
+        td style => "white-space: nowrap";
+         _id_link $self, sprintf("%08X", $c->{addr}), $c->{id};
+        end;
       }
       else {
         td $c->{id};
@@ -120,6 +133,25 @@ sub ajax {
   _col $f->{field}, { addr => $f->{item}, $f->{field} => $f->{$f->{field}} } if not defined $f->{engine_addr} and not defined $f->{addr};
 }
 
+sub id_list {
+  my $self = shift;
+  my $f = $self->formValidate(
+    { name => 'man', enum => [1..65535] },
+    { name => 'prod', enum => [1..65535] },
+  );
+  return 404 if $f->{_err};
+
+  my @ids = @{$self->dbAll('SELECT ((id).id) AS uid, id, name FROM addresses WHERE (id).man = ? AND (id).prod = ? AND NOT active', $f->{man}, $f->{prod})};
+
+  # main select box
+  div id => 'id_main'; Select;
+
+   for my $id (@ids) {
+     (my $id_text = $id->{id}) =~ s/\((\d+),(\d+),(\d+)\)/sprintf(" (%04X:%04X:%04X)", $1, $2, $3)/e;
+     option value => $id->{uid}, $id->{name}.$id_text;
+   }
+  end;
+}
 
 1;
 

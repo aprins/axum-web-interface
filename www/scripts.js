@@ -249,6 +249,30 @@ function conf_func(addr, nr, f1, f2, f3, sensor, actuator, obj) {
   return false;
 }
 
+function conf_id(addr, man_id, prod_id, obj) {
+  var selected_id, l, i;
+  var d = create_input(obj, function(f) {
+    l = document.getElementById('id_main').getElementsByTagName('select')[0];
+    selected_id = l.options[l.selectedIndex].value;
+    while(obj.nodeName.toLowerCase() != 'td')
+      obj = obj.parentNode;
+    ajax('/ajax/change_conf?addr='+addr+';man='+man_id
+        +';prod='+prod_id+';id='+selected_id, function(h) {
+      obj.innerHTML = h.responseText;
+      remove_input(input_obj);
+    });
+  });
+  if(!d) return false;
+  d.innerHTML = 'loading id list...';
+  ajax('/ajax/id_list?man='+man_id+';prod='+prod_id, function(h) {
+    d.innerHTML = h.responseText + '<input type="submit" value="Save" class="button" />';
+    l = d.getElementsByTagName('div');
+    l = document.getElementById('id_main').getElementsByTagName('select')[0];
+    for(i=0; i<l.options.length; i++)
+      l.options[i].selected = l.options[i].value == selected_id;
+  });
+  return false;
+}
 
 function exp_over() {
   var str_array = this.className.split(' ');
