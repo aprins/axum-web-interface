@@ -9,6 +9,7 @@ YAWF::register(
   qr{mambanet} => \&list,
   qr{ajax/mambanet} => \&ajax,
   qr{ajax/id_list} => \&id_list,
+  qr{ajax/change_conf} => \&change_conf,
 );
 
 
@@ -25,12 +26,13 @@ sub _col {
       $n eq 'engine_addr' && $v eq '00000000' ? (class => 'off') : (), $v;
   }
   elsif ($n eq 'id') {
-    if (($c->{conf_change} != 0) and ($c->{default_cnt} or $c->{config_cnt})) {
+#    if (($c->{conf_change} != 0) and ($c->{default_cnt} or $c->{config_cnt})) {
+    if ($c->{conf_change} and $c->{temp_cnt}) {
       (my $man = $c->{id})  =~ s/(\w{4}):(\w{4}):(\w{4})/$1/e;
       (my $prod = $c->{id}) =~ s/(\w{4}):(\w{4}):(\w{4})/$2/e;
       (my $uid = $c->{id})  =~ s/(\w{4}):(\w{4}):(\w{4})/$3/e;
       txt  $man.":".$prod.":";
-      a href => '#', onclick => sprintf('return conf_id("%s", %d, %d, this)', $c->{addr}, hex($man), hex($prod)), $uid;
+      a href => '#', onclick => sprintf('return conf_id("%s", %d, %d, %d, this)', $c->{addr}, hex($man), hex($prod), $c->{firm_major}), $uid;
     }
     else {
       txt $c->{id};
@@ -48,17 +50,18 @@ sub list {
     return $self->resRedirect('/mambanet');
   }
 
-  my $cards = $self->dbAll('SELECT a.addr, a.id, a.name, a.active, a.engine_addr, a.parent, b.name AS parent_name,
+  my $cards = $self->dbAll('SELECT a.addr, a.id, a.name, a.active, a.engine_addr, a.parent, a.firm_major, b.name AS parent_name,
     (SELECT COUNT(*) FROM node_config n WHERE a.addr = n.addr) AS config_cnt,
     (SELECT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt,
-    (SELECT COUNT(*) FROM addresses b WHERE (b.id).man = (a.id).man AND (b.id).prod = (a.id).prod AND NOT b.active AND a.active) AS conf_change
+    (SELECT COUNT(*) FROM addresses b WHERE (b.id).man = (a.id).man AND (b.id).prod = (a.id).prod AND b.firm_major = a.firm_major AND b.active AND NOT a.active) AS conf_change,
+    (SELECT COUNT(*) FROM templates t WHERE (a.id).man = t.man_id AND (a.id).prod = t.prod_id AND a.firm_major = t.firm_major) AS temp_cnt
     FROM addresses a
     LEFT JOIN addresses b ON (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id
     ORDER BY a.addr');
 
   $self->htmlHeader(title => 'MambaNet configuration', page => 'mambanet');
   table;
-   Tr; th colspan => 8, 'MambaNet configuration'; end;
+   Tr; th colspan => 9, 'MambaNet configuration'; end;
    Tr;
     th 'Address';
     th 'Unique ID';
@@ -67,6 +70,7 @@ sub list {
     th 'Parent';
     th 'Default';
     th 'Config';
+    th 'Objects';
     th '';
    end;
    for my $c (@$cards) {
@@ -80,6 +84,7 @@ sub list {
       td $c->{parent};
       td !$c->{default_cnt} ? (class => 'inactive') : (), $c->{default_cnt};
       td !$c->{config_cnt} ? (class => 'inactive') : (), $c->{config_cnt};
+      td !$c->{temp_cnt} ? (class => 'inactive') : (), $c->{temp_cnt};
       td;
        if (!$c->{active}) {
          a href => '/mambanet?del='.$c->{addr}, title => 'Delete';
@@ -124,10 +129,11 @@ sub id_list {
   my $f = $self->formValidate(
     { name => 'man', enum => [1..65535] },
     { name => 'prod', enum => [1..65535] },
+    { name => 'firm_major', enum => [0..255] },
   );
   return 404 if $f->{_err};
 
-  my @ids = @{$self->dbAll('SELECT ((id).id) AS uid, id, name FROM addresses WHERE (id).man = ? AND (id).prod = ? AND NOT active', $f->{man}, $f->{prod})};
+  my @ids = @{$self->dbAll('SELECT ((id).id) AS uid, id, name FROM addresses WHERE (id).man = ? AND (id).prod = ? AND firm_major = ? AND active', $f->{man}, $f->{prod}, $f->{firm_major})};
 
   # main select box
   div id => 'id_main'; Select;
@@ -137,6 +143,24 @@ sub id_list {
    }
   end;
 }
+
+sub change_conf {
+  my $self = shift;
+
+  my $f = $self->formValidate(
+    { name => 'addr', template => 'int' },
+    { name => 'man', enum => [1..65535] },
+    { name => 'prod', enum => [1..65535] },
+    { name => 'id', enum => [1..65535] },
+    { name => 'firm_major', enum => [0..255] },
+  );
+  return 404 if $f->{_err};
+
+  $self->dbExec("UPDATE addresses SET id.id = ?, refresh = TRUE WHERE addr = ? AND (id).man = ? AND (id).prod = ? AND firm_major = ?", $f->{id}, $f->{addr}, $f->{man}, $f->{prod}, $f->{firm_major});
+
+  txt 'Wait for refresh';
+}
+
 
 1;
 

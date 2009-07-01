@@ -249,22 +249,24 @@ function conf_func(addr, nr, f1, f2, f3, sensor, actuator, obj) {
   return false;
 }
 
-function conf_id(addr, man_id, prod_id, obj) {
+function conf_id(addr, man_id, prod_id, firm_major, obj) {
   var selected_id, l, i;
   var d = create_input(obj, function(f) {
     l = document.getElementById('id_main').getElementsByTagName('select')[0];
     selected_id = l.options[l.selectedIndex].value;
     while(obj.nodeName.toLowerCase() != 'td')
       obj = obj.parentNode;
+    alert('/ajax/change_conf?addr='+addr+';man='+man_id+';prod='+prod_id+';id='+selected_id+';firm_major='+firm_major);
     ajax('/ajax/change_conf?addr='+addr+';man='+man_id
-        +';prod='+prod_id+';id='+selected_id, function(h) {
+        +';prod='+prod_id+';id='+selected_id+';firm_major='+firm_major, function(h) {
       obj.innerHTML = h.responseText;
       remove_input(input_obj);
+      location.reload(true);
     });
   });
   if(!d) return false;
   d.innerHTML = 'loading id list...';
-  ajax('/ajax/id_list?man='+man_id+';prod='+prod_id, function(h) {
+  ajax('/ajax/id_list?man='+man_id+';prod='+prod_id+';firm_major='+firm_major, function(h) {
     d.innerHTML = h.responseText + '<input type="submit" value="Save" class="button" />';
     l = d.getElementsByTagName('div');
     l = document.getElementById('id_main').getElementsByTagName('select')[0];
