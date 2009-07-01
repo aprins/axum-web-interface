@@ -149,10 +149,10 @@ sub change_conf {
 
   my $f = $self->formValidate(
     { name => 'addr', template => 'int' },
-    { name => 'man', enum => [1..65535] },
-    { name => 'prod', enum => [1..65535] },
-    { name => 'id', enum => [1..65535] },
-    { name => 'firm_major', enum => [0..255] },
+    { name => 'man', template => 'int' },
+    { name => 'prod', template => 'int' },
+    { name => 'id', template => 'int' },
+    { name => 'firm_major', template => 'int' },
   );
   return 404 if $f->{_err};
 

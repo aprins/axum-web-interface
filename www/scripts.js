@@ -256,7 +256,6 @@ function conf_id(addr, man_id, prod_id, firm_major, obj) {
     selected_id = l.options[l.selectedIndex].value;
     while(obj.nodeName.toLowerCase() != 'td')
       obj = obj.parentNode;
-    alert('/ajax/change_conf?addr='+addr+';man='+man_id+';prod='+prod_id+';id='+selected_id+';firm_major='+firm_major);
     ajax('/ajax/change_conf?addr='+addr+';man='+man_id
         +';prod='+prod_id+';id='+selected_id+';firm_major='+firm_major, function(h) {
       obj.innerHTML = h.responseText;
