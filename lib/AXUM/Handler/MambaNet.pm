@@ -43,11 +43,13 @@ sub _col {
 sub list {
   my $self = shift;
 
-  # if del, remove mambanet address 
-  my $f = $self->formValidate({name => 'del', template => 'int'});
+  # if del, remove mambanet address
+  # if refresh, update address table
+  my $f = $self->formValidate(map +{name => $_, required => 0, template => 'int'}, 'del','refresh');
   if(!$f->{_err}) {
-    $self->dbExec('DELETE FROM addresses WHERE addr = ?', $f->{del});
-    return $self->resRedirect('/mambanet');
+    $f->{del} ? ($self->dbExec('DELETE FROM addresses WHERE addr = ?', $f->{del})) : ();
+    $f->{refresh} ? ($self->dbExec('UPDATE addresses SET refresh = TRUE WHERE addr = ?', $f->{refresh})) : ();
+    ($f->{del} or $f->{refresh}) ? (return $self->resRedirect('/mambanet')) : ();
   }
 
   my $cards = $self->dbAll('SELECT a.addr, a.id, a.name, a.active, a.engine_addr, a.parent, a.firm_major, b.name AS parent_name,
@@ -85,10 +87,15 @@ sub list {
       td !$c->{default_cnt} ? (class => 'inactive') : (), $c->{default_cnt};
       td !$c->{config_cnt} ? (class => 'inactive') : (), $c->{config_cnt};
       td !$c->{temp_cnt} ? (class => 'inactive') : (), $c->{temp_cnt};
-      td;
+      td valign => 'middle';
        if (!$c->{active}) {
          a href => '/mambanet?del='.$c->{addr}, title => 'Delete';
           img src => '/images/delete.png', alt => 'delete';
+         end;
+       }
+       else {
+         a href => '/mambanet?refresh='.$c->{addr}, title => 'Refresh';
+           img src => '/images/refresh.png', alt => 'refresh';
          end;
        }
       end;
