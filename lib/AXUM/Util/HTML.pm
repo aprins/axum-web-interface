@@ -28,7 +28,13 @@ sub htmlHeader {
      a href => '/', 'Main menu' if $o{page} eq 'home';
      a href => '/buss', 'Buss configuration' if $o{page} eq 'buss';
      a href => '/monitorbuss', 'Monitor buss configuration' if $o{page} eq 'monitorbuss';
-     a href => '/source', 'Source configuration' if $o{page} eq 'source';
+     if ($o{page} eq 'source') {
+       a href => '/source', 'Source configuration' if $o{page} eq 'source';
+       if($o{section}) {
+         lit " &raquo; ";
+         a href => "/source/$o{section}", "Generate";
+       }
+     }
      a href => '/externsrc', 'Extern source configuration' if $o{page} eq 'externsrc';
      a href => '/dest', 'Destination configuration' if $o{page} eq 'dest';
      a href => '/talkback', 'Talkback configuration' if $o{page} eq 'talkback';

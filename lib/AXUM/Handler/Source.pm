@@ -7,8 +7,9 @@ use YAWF ':html';
 
 
 YAWF::register(
-  qr{source}      => \&source,
-  qr{ajax/source} => \&ajax,
+  qr{source}            => \&source,
+  qr{source/generate}   => \&generate,
+  qr{ajax/source}       => \&ajax,
 );
 
 
@@ -154,7 +155,50 @@ sub source {
   end;
   br; br;
   a href => '#', onclick => 'return conf_addsrcdest(this, "input_channels", "input")', 'Create new source';
+  br; br;
+  a href => '/source/generate', 'Delete sources and generate them from the rack layout';
 
+  $self->htmlFooter;
+}
+
+sub generate {
+  my $self = shift;
+
+  my $cards = $self->dbAll('SELECT a.addr, a.name, s.slot_nr, s.input_ch_cnt, a.active
+    FROM slot_config s JOIN addresses a ON a.addr = s.addr WHERE s.input_ch_cnt <> 0 ORDER BY s.slot_nr');
+
+  $self->htmlHeader(title => 'Generate sources', page => 'source', section => 'generate');
+  table;
+   Tr; th colspan => 8, 'Generate sources'; end;
+   Tr;
+    th 'Slot';
+    th 'Card name';
+    th 'Inputs';
+    th 'Mono';
+   end;
+   for my $c (@$cards) {
+     Tr !$c->{active} ? (class => 'inactive') : ();
+      th rowspan => $c->{input_ch_cnt}, $c->{slot_nr};
+      td rowspan => $c->{input_ch_cnt}, $c->{name};
+      td '1';
+      td;
+       input type => 'checkbox';
+      end;
+     end;
+     my $i;
+     for ($i=2; $i<=$c->{input_ch_cnt}; $i++)
+     {
+       Tr;
+        td $i;
+        td;
+         input type => 'checkbox';
+        end;
+       end;
+     }
+   }
+  end;
+  br;
+  input type => 'button', value => 'generate';
   $self->htmlFooter;
 }
 
