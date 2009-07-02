@@ -203,10 +203,11 @@ sub handle_request {
   # >  12ms (SQL:  8ms,  2 qs) for http://beta.vndb.org/v10
   if($self->debug) {
     
-    # SQL stats (don't count the ping and commit as queries)
-    my($sqlt, $sqlc) = (0, -2);
+    # SQL stats (don't count the ping and commit as queries, but do count their time)
+    my($sqlt, $sqlc) = (0);
     if($self->{_YAWF}{db_login}) {
-      ++$sqlc and $sqlt += $_->[1]*1000
+      $sqlc = grep $_->[0] ne 'ping/rollback' && $_->[0] ne 'commit', @{$self->{_YAWF}{DB}{queries}};
+      $sqlt += $_->[1]*1000
         for (@{$self->{_YAWF}{DB}{queries}});
     }
 
