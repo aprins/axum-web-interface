@@ -79,6 +79,7 @@ sub _create_source {
     INSERT INTO src_config (number, label, input1_addr, input1_sub_ch, input2_addr, input2_sub_ch) VALUES (!l)|,
     [ $num, $f->{label}, @inputs ]);
   $self->dbExec("SELECT src_config_renumber()");
+  $self->resRedirect('/source', 'post');
 }
 
 
@@ -88,7 +89,7 @@ sub source {
   my $chan = _channels $self;
 
   # if POST, insert new source
-  _create_source($self, $chan) if $self->reqMethod eq 'POST';
+  return _create_source($self, $chan) if $self->reqMethod eq 'POST';
 
   # if del, remove source
   my $f = $self->formValidate({name => 'del', template => 'int'});
