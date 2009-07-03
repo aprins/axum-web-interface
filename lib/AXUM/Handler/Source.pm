@@ -233,11 +233,11 @@ sub ajax {
     { name => 'input2', required => 0, regex => [ qr/[0-9]+_[0-9]+/, 0 ] },
     (map +{ name => "redlight$_", required => 0, enum => [0,1] }, 1..8),
     (map +{ name => "monitormute$_", required => 0, enum => [0,1] }, 1..16),
-    { name => 'pos', required => 0, 'int' },
+    { name => 'pos', required => 0, template => 'int' },
   );
   return 404 if $f->{_err};
 
-  #if field returned is 'nr', the positions of other rows may change...
+  #if field returned is 'pos', the positions of other rows may change...
   if($f->{field} eq 'pos') {
     $self->dbExec("UPDATE src_config SET pos =
                    CASE
