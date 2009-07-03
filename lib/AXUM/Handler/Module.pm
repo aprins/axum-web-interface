@@ -193,17 +193,18 @@ sub conf {
   );
   return 404 if !$mod->{number};
 
-  my $lst = $self->dbAll(q|SELECT number, label, type, active FROM matrix_sources ORDER BY number|);
+  my $pos_lst = $self->dbAll(q|SELECT number, label, type, active FROM matrix_sources ORDER BY pos|);
+  my $src_lst = $self->dbAll(q|SELECT number, label, type, active FROM matrix_sources ORDER BY number|);
 
   $self->htmlHeader(page => 'module', section => $nr, title => "Module $nr configuration");
-  $self->htmlSourceList($lst, 'matrix_sources');
+  $self->htmlSourceList($pos_lst, 'matrix_sources');
   div id => 'eq_table_container', class => 'hidden';
    _eqtable($mod);
   end;
   table;
    Tr; th colspan => 4, "Configuration for module $nr"; end;
-   Tr; th 'Source A'; td colspan => 3; _col 'source_a', $mod, $lst; end; end;
-   Tr; th 'Source B'; td colspan => 3; _col 'source_b', $mod, $lst; end; end;
+   Tr; th 'Source A'; td colspan => 3; _col 'source_a', $mod, $src_lst; end; end;
+   Tr; th 'Source B'; td colspan => 3; _col 'source_b', $mod, $src_lst; end; end;
    Tr; th 'Gain';     td colspan => 3; _col 'gain', $mod; end; end;
    Tr; td colspan => 4, style => 'background: none', ''; end;
    Tr;
@@ -220,7 +221,7 @@ sub conf {
    Tr; th 'Insert';
     td; _col 'insert_on_off_a', $mod; end;
     td; _col 'insert_on_off_b', $mod; end;
-    td; _col 'insert_source', $mod, $lst; end;
+    td; _col 'insert_source', $mod, $src_lst; end;
    end;
    Tr; th 'EQ';
     td; _col 'eq_on_off_a', $mod; end;

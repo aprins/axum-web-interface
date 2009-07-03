@@ -1,4 +1,4 @@
-
+#
 package AXUM::Handler::Source;
 
 use strict;
@@ -28,6 +28,9 @@ sub _col {
   my($n, $d) = @_;
   my $v = $d->{$n};
 
+  if($n eq 'pos') {
+    a href => '#', onclick => sprintf('return conf_select("source", %d, "%s", "%s", this, "source_list")', $d->{number}, $n, "$d->{pos}"), $d->{pos};
+  }
   if($n eq 'label') {
     (my $jsval = $v) =~ s/\\/\\\\/g;
     $jsval =~ s/"/\\"/g;
@@ -75,6 +78,7 @@ sub _create_source {
   $self->dbExec(q|
     INSERT INTO src_config (number, label, input1_addr, input1_sub_ch, input2_addr, input2_sub_ch) VALUES (!l)|,
     [ $num, $f->{label}, @inputs ]);
+  $self->dbExec("SELECT src_config_renumber()");
 }
 
 
@@ -90,6 +94,7 @@ sub source {
   my $f = $self->formValidate({name => 'del', template => 'int'});
   if(!$f->{_err}) {
     $self->dbExec('DELETE FROM src_config WHERE number = ?', $f->{del});
+    $self->dbExec("SELECT src_config_renumber()");
     return $self->resRedirect('/source');
   }
   
@@ -97,8 +102,8 @@ sub source {
     FROM monitor_buss_config ORDER BY number');
 
   my @cols = ((map "redlight$_", 1..8), (map "monitormute$_", 1..16));
-  my $src = $self->dbAll(q|SELECT number, label, input1_addr, input1_sub_ch, input2_addr,
-    input2_sub_ch, phantom, pad, gain, !s FROM src_config ORDER BY number|, join ', ', @cols);
+  my $src = $self->dbAll(q|SELECT pos, number, label, input1_addr, input1_sub_ch, input2_addr,
+    input2_sub_ch, phantom, pad, gain, !s FROM src_config ORDER BY pos|, join ', ', @cols);
 
   $self->htmlHeader(title => 'Source configuration', page => 'source');
   # create list of available channels for javascript
@@ -107,6 +112,18 @@ sub source {
     option value => "$_->{addr}_$_->{channel}",
         sprintf "Slot %d channel %d (%s)", $_->{slot_nr}, $_->{channel}, $_->{name}
       for @$chan;
+   end;
+  end;
+  # create list of sources for javascript
+  div id => 'source_list', class => 'hidden';
+   Select;
+   my $max_pos;
+    $max_pos = 0;
+    for (@$src) {
+      option value => "$_->{pos}", $_->{label};
+      $max_pos = $_->{pos} if ($_->{pos} > $max_pos);
+    }
+    option value => $max_pos+1, "last";
    end;
   end;
 
@@ -120,7 +137,7 @@ sub source {
     th '';
    end;
    Tr;
-    th 'Nr.';
+    th 'Nr';
     th 'Label';
     th 'Input 1 (left)';
     th 'Input 2 (right)';
@@ -135,7 +152,7 @@ sub source {
 
    for my $s (@$src) {
      Tr;
-      th $s->{number};
+      th; _col 'pos', $s; end;
       td; _col 'label', $s; end;
       td; _col 'input1', $s, $chan; end;
       td; _col 'input2', $s, $chan; end;
@@ -155,8 +172,7 @@ sub source {
   end;
   br; br;
   a href => '#', onclick => 'return conf_addsrcdest(this, "input_channels", "input")', 'Create new source';
-  br; br;
-  a href => '/source/generate', 'Delete sources and generate them from the rack layout';
+  #a href => '/source/generate', 'Delete sources and generate them from the rack layout';
 
   $self->htmlFooter;
 }
@@ -217,22 +233,35 @@ sub ajax {
     { name => 'input2', required => 0, regex => [ qr/[0-9]+_[0-9]+/, 0 ] },
     (map +{ name => "redlight$_", required => 0, enum => [0,1] }, 1..8),
     (map +{ name => "monitormute$_", required => 0, enum => [0,1] }, 1..16),
+    { name => 'pos', required => 0, 'int' },
   );
   return 404 if $f->{_err};
 
-  my %set;
-  defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
-    for(qw|label phantom pad gain|, (map "redlight$_", 1..8), (map "monitormute$_", 1..16));
-  defined $f->{$_} and $f->{$_} =~ /([0-9]+)_([0-9]+)/ and ($set{$_.'_addr = ?, '.$_.'_sub_ch = ?'} = [ $1, $2 ])
-    for('input1', 'input2');
-
-  $self->dbExec('UPDATE src_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
-  if($f->{field} =~ /(input[12])/) {
-    my @l = split /_/, $f->{$f->{field}};
-    _col $f->{field}, { number => $f->{item}, $1.'_addr' => $l[0], $1.'_sub_ch' => $l[1] }, _channels $self;
+  #if field returned is 'nr', the positions of other rows may change...
+  if($f->{field} eq 'pos') {
+    $self->dbExec("UPDATE src_config SET pos =
+                   CASE
+                    WHEN pos < $f->{pos} AND number <> $f->{item} THEN pos
+                    WHEN pos >= $f->{pos} AND number <> $f->{item} THEN pos+1
+                    WHEN number = $f->{item} THEN $f->{pos}
+                    ELSE 9999
+                   END;");
+    $self->dbExec("SELECT src_config_renumber();");
+    #_col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} };
+    txt 'Wait for reload';
   } else {
-    _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} };
+    my %set;
+    defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
+      for(qw|label phantom pad gain|, (map "redlight$_", 1..8), (map "monitormute$_", 1..16));
+    defined $f->{$_} and $f->{$_} =~ /([0-9]+)_([0-9]+)/ and ($set{$_.'_addr = ?, '.$_.'_sub_ch = ?'} = [ $1, $2 ])
+      for('input1', 'input2');
+
+    $self->dbExec('UPDATE src_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
+    if($f->{field} =~ /(input[12])/) {
+      my @l = split /_/, $f->{$f->{field}};
+      _col $f->{field}, { number => $f->{item}, $1.'_addr' => $l[0], $1.'_sub_ch' => $l[1] }, _channels $self;
+    } else {
+      _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} };
+    }
   }
 }
-
-

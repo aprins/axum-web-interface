@@ -89,11 +89,15 @@ function click_input(e) {
 function conf_set(page, item, field, value, obj) {
   if(obj == null)
     obj = this;
-  while(obj.nodeName.toLowerCase() != 'td')
+  while((obj.nodeName.toLowerCase() != 'td') && (obj.nodeName.toLowerCase() != 'th'))
     obj = obj.parentNode;
   ajax('/ajax/'+page+'?item='+item+';field='+field+';'+field+'='+encodeURIComponent(value), function(h) {
     obj.innerHTML = h.responseText;
     remove_input(input_obj);
+    if((page == 'source') && (field == 'pos'))
+    {
+      location.reload(true);
+    }
   });
   return false;
 }

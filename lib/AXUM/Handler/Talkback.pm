@@ -24,17 +24,18 @@ sub talkback {
   my $self = shift;
 
   my $tb = $self->dbAll(q|SELECT number, source FROM talkback_config ORDER BY number|);
-  my $lst = $self->dbAll(q|SELECT number, type, label, active FROM matrix_sources ORDER BY number|);
+  my $pos_lst = $self->dbAll(q|SELECT number, type, label, active FROM matrix_sources ORDER BY pos|);
+  my $src_lst = $self->dbAll(q|SELECT number, type, label, active FROM matrix_sources ORDER BY number|);
 
   $self->htmlHeader(page => 'talkback', title => 'Talkback configuration');
-  $self->htmlSourceList($lst, 'matrix_sources');
+  $self->htmlSourceList($pos_lst, 'matrix_sources');
   table;
    Tr; th colspan => 2, 'Talkback configuration'; end;
 
    for (@$tb) {
      Tr;
       th "Talkback $_->{number}";
-      td; _col $_, $lst; end;
+      td; _col $_, $src_lst; end;
      end;
    }
   end;
@@ -45,16 +46,16 @@ sub talkback {
 sub ajax {
   my $self = shift;
 
-  my $lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number');
+  my $src_lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number');
   my $f = $self->formValidate(
     { name => 'field', template => 'asciiprint', enum => ['source'] },
     { name => 'item', template => 'int' },
-    { name => 'source', required => 0, enum => [ 0, map $_->{number}, @$lst ] },
+    { name => 'source', required => 0, enum => [ 0, map $_->{number}, @$src_lst ] },
   );
   return 404 if $f->{_err};
 
   $self->dbExec('UPDATE talkback_config SET source = ? WHERE number = ?', $f->{source}, $f->{item}) if defined $f->{source};
-  _col { number => $f->{item}, source => $f->{source} }, $lst;
+  _col { number => $f->{item}, source => $f->{source} }, $src_lst;
 }
 
 

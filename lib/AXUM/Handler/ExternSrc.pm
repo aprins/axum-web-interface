@@ -23,14 +23,15 @@ sub _col {
 sub extsrc {
   my $self = shift;
 
-  my $lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number');
+  my $pos_lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY pos');
+  my $src_lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number');
   my $mb = $self->dbAll('SELECT number, label, number <= dsp_count()*4 AS active
     FROM monitor_buss_config ORDER BY number');
   my $es = $self->dbAll('SELECT number, !s FROM extern_src_config ORDER BY number',
     join ', ', map "ext$_", 1..8);
 
   $self->htmlHeader(title => 'Extern source configuration', page => 'externsrc');
-  $self->htmlSourceList($lst, 'matrix_sources');
+  $self->htmlSourceList($pos_lst, 'matrix_sources');
 
   table;
    Tr; th colspan => 10, 'Extern source configuration'; end;
@@ -49,7 +50,7 @@ sub extsrc {
       th $m->{number};
       td $m->{label};
       $m->{number} % 4 == 1 and do {for (1..8) {
-        td rowspan => 4; _col "ext$_", $es->[($m->{number}-1)/4], $lst; end;
+        td rowspan => 4; _col "ext$_", $es->[($m->{number}-1)/4], $src_lst; end;
       }};
      end;
    }
@@ -61,8 +62,8 @@ sub extsrc {
 sub ajax {
   my $self = shift;
 
-  my $lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number');
-  my $enum = [ 0, map $_->{number}, @$lst ];
+  my $src_lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number');
+  my $enum = [ 0, map $_->{number}, @$src_lst ];
   my $f = $self->formValidate(
     { name => 'field', template => 'asciiprint' },
     { name => 'item', template => 'int' },
@@ -75,7 +76,7 @@ sub ajax {
     for(1..8);
 
   $self->dbExec('UPDATE extern_src_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
-  _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} }, $lst;
+  _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} }, $src_lst;
 }
 
 

@@ -89,7 +89,8 @@ sub dest {
   # if POST, create destination
   _create_dest($self, $ch) if $self->reqMethod eq 'POST';
 
-  my $lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number');
+  my $pos_lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY pos');
+  my $src_lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number');
   my $dest = $self->dbAll(q|SELECT number, label, output1_addr,
     output1_sub_ch, output2_addr, output2_sub_ch, level, source, mix_minus_source
     FROM dest_config ORDER BY number|);
@@ -102,8 +103,8 @@ sub dest {
       for @$ch;
    end;
   end;
-  $self->htmlSourceList($lst, 'source_items');
-  $self->htmlSourceList($lst, 'mix_minus_items', 1);
+  $self->htmlSourceList($pos_lst, 'source_items');
+  $self->htmlSourceList($pos_lst, 'mix_minus_items', 1);
 
   table;
    Tr; th colspan => 8, 'Destination configuration'; end;
@@ -125,8 +126,8 @@ sub dest {
       td; _col 'output1', $d, $ch; end;
       td; _col 'output2', $d, $ch; end;
       td; _col 'level', $d; end;
-      td; _col 'source', $d, $lst; end;
-      td; _col 'mix_minus_source', $d, $lst; end;
+      td; _col 'source', $d, $src_lst; end;
+      td; _col 'mix_minus_source', $d, $src_lst; end;
       td;
        a href => '/dest?del='.$d->{number}, title => 'Delete';
         img src => '/images/delete.png', alt => 'delete';
