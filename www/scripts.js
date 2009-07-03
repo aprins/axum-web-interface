@@ -94,7 +94,7 @@ function conf_set(page, item, field, value, obj) {
   ajax('/ajax/'+page+'?item='+item+';field='+field+';'+field+'='+encodeURIComponent(value), function(h) {
     obj.innerHTML = h.responseText;
     remove_input(input_obj);
-    if((page == 'source') && (field == 'pos'))
+    if(((page == 'source') || (page == 'dest')) && (field == 'pos'))
     {
       location.reload(true);
     }

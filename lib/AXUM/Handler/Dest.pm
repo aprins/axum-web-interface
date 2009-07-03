@@ -27,6 +27,9 @@ sub _col {
   my($n, $d, $lst) = @_;
   my $v = $d->{$n};
 
+  if($n eq 'pos') {
+    a href => '#', onclick => sprintf('return conf_select("dest", %d, "%s", "%s", this, "dest_list")', $d->{number}, $n, "$d->{pos}"), $d->{pos};
+  }
   if($n eq 'level') {
     a href => '#', onclick => sprintf('return conf_level("dest", %d, "level", %f, this)', $d->{number}, $v),
       $v == 0 ? (class => 'off') : (), sprintf '%.1f dB', $v;
@@ -71,6 +74,7 @@ sub _create_dest {
   $self->dbExec(q|
     INSERT INTO dest_config (number, label, output1_addr, output1_sub_ch, output2_addr, output2_sub_ch) VALUES (!l)|,
     [ $num, $f->{label}, @outputs ]);
+  $self->dbExec("SELECT dest_config_renumber();");
 }
 
 
@@ -81,6 +85,7 @@ sub dest {
   my $f = $self->formValidate({name => 'del', template => 'int'});
   if(!$f->{_err}) {
     $self->dbExec('DELETE FROM dest_config WHERE number = ?', $f->{del});
+    $self->dbExec("SELECT dest_config_renumber();");
     return $self->resRedirect('/dest');
   }
 
@@ -91,9 +96,9 @@ sub dest {
 
   my $pos_lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY pos');
   my $src_lst = $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number');
-  my $dest = $self->dbAll(q|SELECT number, label, output1_addr,
+  my $dest = $self->dbAll(q|SELECT pos, number, label, output1_addr,
     output1_sub_ch, output2_addr, output2_sub_ch, level, source, mix_minus_source
-    FROM dest_config ORDER BY number|);
+    FROM dest_config ORDER BY pos|);
 
   $self->htmlHeader(page => 'dest', title => 'Destination configuration');
   div id => 'output_channels', class => 'hidden';
@@ -103,13 +108,26 @@ sub dest {
       for @$ch;
    end;
   end;
+  # create list of destination for javascript
+  div id => 'dest_list', class => 'hidden';
+   Select;
+   my $max_pos;
+    $max_pos = 0;
+    for (@$dest) {
+      option value => "$_->{pos}", $_->{label};
+      $max_pos = $_->{pos} if ($_->{pos} > $max_pos);
+    }
+    option value => $max_pos+1, "last";
+   end;
+  end;
+
   $self->htmlSourceList($pos_lst, 'source_items');
   $self->htmlSourceList($pos_lst, 'mix_minus_items', 1);
 
   table;
    Tr; th colspan => 8, 'Destination configuration'; end;
    Tr;
-    th 'Nr.';
+    th 'Nr';
     th 'Label';
     th 'Output 1 (left)';
     th 'Output 2 (right)';
@@ -121,7 +139,7 @@ sub dest {
 
    for my $d (@$dest) {
      Tr;
-      th $d->{number};
+      th; _col 'pos', $d; end;
       td; _col 'label', $d; end;
       td; _col 'output1', $d, $ch; end;
       td; _col 'output2', $d, $ch; end;
@@ -155,23 +173,38 @@ sub ajax {
     { name => 'output2', required => 0, regex => [ qr/[0-9]+_[0-9]+/, 0 ] },
     { name => 'source', required => 0, template => 'int' },
     { name => 'mix_minus_source', required => 0, template => 'int' },
+    { name => 'pos', required => 0, template => 'int' },
   );
   return 404 if $f->{_err};
 
-  my %set;
-  defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
-    for(qw|label level source mix_minus_source|);
-  defined $f->{$_} and $f->{$_} =~ /([0-9]+)_([0-9]+)/ and ($set{$_.'_addr = ?, '.$_.'_sub_ch = ?'} = [ $1, $2 ])
-    for('output1', 'output2');
-
-  $self->dbExec('UPDATE dest_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
-  if($f->{field} =~ /(output[12])/) {
-    my @l = split /_/, $f->{$f->{field}};
-    _col $f->{field}, { number => $f->{item}, $1.'_addr' => $l[0], $1.'_sub_ch' => $l[1] }, _channels $self;
+  #if field returned is 'pos', the positions of other rows may change...
+  if($f->{field} eq 'pos') {
+    $self->dbExec("UPDATE dest_config SET pos =
+                   CASE
+                    WHEN pos < $f->{pos} AND number <> $f->{item} THEN pos
+                    WHEN pos >= $f->{pos} AND number <> $f->{item} THEN pos+1
+                    WHEN number = $f->{item} THEN $f->{pos}
+                    ELSE 9999
+                   END;");
+    $self->dbExec("SELECT dest_config_renumber();");
+    #_col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} };
+    txt 'Wait for reload';
   } else {
-    _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
-      $f->{field} eq 'source' || $f->{field} eq 'mix_minus_source' ?
-        $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number') : ();
+    my %set;
+    defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
+      for(qw|label level source mix_minus_source|);
+    defined $f->{$_} and $f->{$_} =~ /([0-9]+)_([0-9]+)/ and ($set{$_.'_addr = ?, '.$_.'_sub_ch = ?'} = [ $1, $2 ])
+      for('output1', 'output2');
+
+    $self->dbExec('UPDATE dest_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
+    if($f->{field} =~ /(output[12])/) {
+      my @l = split /_/, $f->{$f->{field}};
+      _col $f->{field}, { number => $f->{item}, $1.'_addr' => $l[0], $1.'_sub_ch' => $l[1] }, _channels $self;
+    } else {
+      _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
+        $f->{field} eq 'source' || $f->{field} eq 'mix_minus_source' ?
+          $self->dbAll('SELECT number, label, type, active FROM matrix_sources ORDER BY number') : ();
+    }
   }
 }
 
