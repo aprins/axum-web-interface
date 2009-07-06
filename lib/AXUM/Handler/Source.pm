@@ -180,43 +180,28 @@ sub source {
 
 sub generate {
   my $self = shift;
+  my $i;
+  my $cards = $self->dbAll('SELECT a.addr, a.name, s.slot_nr, s.input_ch_cnt
+    FROM slot_config s JOIN addresses a ON a.addr = s.addr WHERE s.input_ch_cnt <> 0 AND a.active ORDER BY s.slot_nr, a.name');
+  my $cnt_src;
+  $cnt_src = 1;
 
-  my $cards = $self->dbAll('SELECT a.addr, a.name, s.slot_nr, s.input_ch_cnt, a.active
-    FROM slot_config s JOIN addresses a ON a.addr = s.addr WHERE s.input_ch_cnt <> 0 ORDER BY s.slot_nr');
+  $self->dbExec("TRUNCATE TABLE src_config;");
+  for my $c (@$cards) {
+    for ($i=0; $i<$c->{input_ch_cnt}; $i+=2)
+    {
+      my $num = $self->dbRow(q|SELECT gen
+       FROM generate_series(1, COALESCE((SELECT MAX(number)+1 FROM src_config), 1)) AS g(gen)
+       WHERE NOT EXISTS(SELECT 1 FROM src_config WHERE number = gen)
+       LIMIT 1|)->{gen};
 
-  $self->htmlHeader(title => 'Generate sources', page => 'source', section => 'generate');
-  table;
-   Tr; th colspan => 8, 'Generate sources'; end;
-   Tr;
-    th 'Slot';
-    th 'Card name';
-    th 'Inputs';
-    th 'Mono';
-   end;
-   for my $c (@$cards) {
-     Tr !$c->{active} ? (class => 'inactive') : ();
-      th rowspan => $c->{input_ch_cnt}, $c->{slot_nr};
-      td rowspan => $c->{input_ch_cnt}, $c->{name};
-      td '1';
-      td;
-       input type => 'checkbox';
-      end;
-     end;
-     my $i;
-     for ($i=2; $i<=$c->{input_ch_cnt}; $i++)
-     {
-       Tr;
-        td $i;
-        td;
-         input type => 'checkbox';
-        end;
-       end;
-     }
-   }
-  end;
-  br;
-  input type => 'button', value => 'generate';
-  $self->htmlFooter;
+      $c->{name} =~ s/Axum-Rack-//g;
+      $self->dbExec("INSERT INTO src_config (number, label, input1_addr, input1_sub_ch, input2_addr, input2_sub_ch) VALUES ($num, '$c->{name} $cnt_src', $c->{addr}, ".($i+1).", $c->{addr}, ".($i+2).");");
+      $cnt_src++;
+    }
+  }
+  $self->dbExec("SELECT src_config_renumber()");
+  $self->resRedirect('/source', 'post');
 }
 
 
