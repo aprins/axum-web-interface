@@ -19,7 +19,7 @@ sub _channels {
     JOIN addresses a ON a.addr = s.addr
     JOIN generate_series(1,32) AS g(channel) ON s.input_ch_cnt >= g.channel
     WHERE input_ch_cnt > 0
-    ORDER BY a.name, g.channel
+    ORDER BY s.slot_nr, g.channel
   |);
 }
 
@@ -110,7 +110,7 @@ sub source {
   # create list of available channels for javascript
   div id => 'input_channels', class => 'hidden';
    Select;
-    option value => "$_->{addr}_$_->{channel}",
+    option value => "$_->{addr}_$_->{channel}", $_->{active} ? () : (class => 'off'),
         sprintf "Slot %d channel %d (%s)", $_->{slot_nr}, $_->{channel}, $_->{name}
       for @$chan;
    end;

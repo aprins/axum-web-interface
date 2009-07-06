@@ -19,7 +19,7 @@ sub _channels {
     JOIN addresses a ON a.addr = s.addr
     JOIN generate_series(1,32) AS g(channel) ON s.output_ch_cnt >= g.channel
     WHERE output_ch_cnt > 0
-    ORDER BY a.name, g.channel
+    ORDER BY s.slot_nr, g.channel
   |);
 }
 
@@ -104,7 +104,7 @@ sub dest {
   $self->htmlHeader(page => 'dest', title => 'Destination configuration');
   div id => 'output_channels', class => 'hidden';
    Select;
-    option value => "$_->{addr}_$_->{channel}",
+    option value => "$_->{addr}_$_->{channel}", $_->{active} ? () : (class => 'off'),
         sprintf "Slot %d channel %d (%s)", $_->{slot_nr}, $_->{channel}, $_->{name}
       for @$ch;
    end;
