@@ -8,6 +8,7 @@ use YAWF ':html';
 
 YAWF::register(
   qr{dest} => \&dest,
+  qr{dest/generate}   => \&generate,
   qr{ajax/dest} => \&ajax,
 );
 
@@ -160,6 +161,31 @@ sub dest {
   $self->htmlFooter;
 }
 
+sub generate {
+  my $self = shift;
+  my $i;
+  my $cards = $self->dbAll('SELECT a.addr, a.name, s.slot_nr, s.output_ch_cnt
+    FROM slot_config s JOIN addresses a ON a.addr = s.addr WHERE s.output_ch_cnt <> 0 AND a.active ORDER BY s.slot_nr, a.name');
+  my $cnt_dest;
+  $cnt_dest = 1;
+
+  $self->dbExec("TRUNCATE TABLE dest_config;");
+  for my $c (@$cards) {
+    for ($i=0; $i<$c->{output_ch_cnt}; $i+=2)
+    {
+      my $num = $self->dbRow(q|SELECT gen
+       FROM generate_series(1, COALESCE((SELECT MAX(number)+1 FROM dest_config), 1)) AS g(gen)
+       WHERE NOT EXISTS(SELECT 1 FROM dest_config WHERE number = gen)
+       LIMIT 1|)->{gen};
+
+      $c->{name} =~ s/Axum-Rack-//g;
+      $self->dbExec("INSERT INTO dest_config (number, label, output1_addr, output1_sub_ch, output2_addr, output2_sub_ch) VALUES ($num, '$c->{name} $cnt_dest', $c->{addr}, ".($i+1).", $c->{addr}, ".($i+2).");");
+      $cnt_dest++;
+    }
+  }
+  $self->dbExec("SELECT dest_config_renumber()");
+  $self->resRedirect('/dest', 'post');
+}
 
 sub ajax {
   my $self = shift;
