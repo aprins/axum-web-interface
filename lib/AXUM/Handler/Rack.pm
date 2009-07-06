@@ -9,7 +9,7 @@ use YAWF ':html';
 YAWF::register(
   qr{rack} => \&list,
   qr{surface} => \&listui,
-  qr{(surface|rack)/([0-9a-f]{8})} => \&conf,
+  qr{(surface|rack)/([0-9a-fA-F]{8})} => \&conf,
   qr{ajax/func} => \&funclist,
   qr{ajax/setfunc} => \&setfunc,
   qr{ajax/setdefault} => \&setdefault,
