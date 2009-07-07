@@ -7,6 +7,7 @@ use YAWF ':html';
 
 YAWF::register(
   qr{mambanet} => \&list,
+  qr{mambanet/predefined} => \&listpre,
   qr{ajax/mambanet} => \&ajax,
   qr{ajax/id_list} => \&id_list,
   qr{ajax/change_conf} => \&change_conf,
@@ -105,6 +106,57 @@ sub list {
   $self->htmlFooter;
 }
 
+sub listpre {
+  my $self = shift;
+
+  # if del, remove mambanet address
+  # if refresh, update address table
+  my $f = $self->formValidate(
+    { name => 'del', required => 0, maxlength => 32, minlength => 1 },
+    { name => 'man', required => 0, template => 'int' },
+    { name => 'prod', required => 0, template => 'int' },
+    { name => 'firm', required => 0, template => 'int' },
+  );
+
+  if(!$f->{_err}) {
+    $f->{del} ? ($self->dbExec('DELETE FROM predefined_node_config WHERE cfg_name = ? AND man_id = ? AND prod_id = ? AND firm_major = ?', $f->{del}, $f->{man}, $f->{prod}, $f->{firm})) : ();
+    $f->{del} ? (return $self->resRedirect('/mambanet/predefined')) : ();
+  }
+
+  my $pre_cfg = $self->dbAll("SELECT p.cfg_name, p.man_id, p.prod_id, p.firm_major, COUNT(*) AS cnt
+                              FROM predefined_node_config p
+                              GROUP BY p.cfg_name, p.man_id, p.prod_id, p.firm_major
+                              ORDER BY p.man_id, p.prod_id, p.firm_major");
+
+  $self->htmlHeader(title => 'MambaNet predefined configurations', page => 'mambanet', section => 'predefined');
+  table;
+   Tr; th colspan => 6, 'MambaNet predefined configuration'; end;
+   Tr;
+    th 'ManID';
+    th 'ProdID';
+    th 'Major';
+    th 'Name';
+    th 'count';
+    th '';
+   end;
+   for my $p (@$pre_cfg) {
+     Tr;
+      td sprintf("%04X", $p->{man_id});
+      td sprintf("%04X", $p->{prod_id});
+      td $p->{firm_major};
+      td $p->{cfg_name};
+      td $p->{cnt};
+      td;
+       $p->{cfg_name} =~ s/([^A-Za-z0-9])/sprintf("%%%02X", ord($1))/seg;
+       a href => '/mambanet/predefined?del='.$p->{cfg_name}.";man=".$p->{man_id}.";prod=".$p->{prod_id}.";firm=".$p->{firm_major}, title => 'Delete';
+        img src => '/images/delete.png', alt => 'delete';
+       end;
+      end;
+     end;
+   }
+  end;
+  $self->htmlFooter;
+}
 
 sub ajax {
   my $self = shift;
