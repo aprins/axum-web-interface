@@ -279,6 +279,40 @@ function conf_id(addr, man_id, prod_id, firm_major, obj) {
   return false;
 }
 
+function conf_predefined(addr, obj) {
+  var i;var l;var o;
+  var v1; var v2;
+  var d = create_input(obj, function(f) {
+    l = document.getElementById('pre_main').getElementsByTagName('select')[0];
+    v1 = l.options[l.selectedIndex].value;
+    l = document.getElementById('pre_main').getElementsByTagName('input')[0];
+    v2 = l.value;
+
+    while(obj.nodeName.toLowerCase() != 'td')
+      obj = obj.parentNode;
+    ajax('/ajax/setpre?addr='+addr+';predefined='+v1+';offset='+v2, function(h) {
+      obj.innerHTML = h.responseText;
+      remove_input(input_obj);
+    });
+  });
+  if(!d) return false;
+  d.innerHTML = 'loading configuration list...';
+  ajax('/ajax/loadpre?addr='+addr, function(h) {
+    d.innerHTML = h.responseText + ' Offset<input type="text" id="seq" maxlength="4" size="4" value="0"> <input type="submit" value="Save" class="button" />';
+    l = d.getElementsByTagName('div');
+    for(i=0; i<l.length; i++)
+      if(l[i].id != 'pre_main')
+        l[i].className = 'hidden';
+    l = document.getElementById('pre_main').getElementsByTagName('select')[0];
+    l.onchange = function() {
+      f1 = this.options[this.selectedIndex].value;
+      l = d.getElementsByTagName('div');
+    };
+  });
+  return false;
+}
+
+
 function exp_over() {
   var str_array = this.className.split(' ');
   var el = this.abbr ? this : document.getElementById(str_array[0]);

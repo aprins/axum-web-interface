@@ -10,6 +10,9 @@ YAWF::register(
   qr{rack} => \&list,
   qr{surface} => \&listui,
   qr{(surface|rack)/([0-9a-fA-F]{8})} => \&conf,
+  qr{ajax/(surface|rack)} => \&ajax,
+  qr{ajax/loadpre} => \&loadpre,
+  qr{ajax/setpre} => \&setpre,
   qr{ajax/func} => \&funclist,
   qr{ajax/setfunc} => \&setfunc,
   qr{ajax/setdefault} => \&setdefault,
@@ -22,18 +25,19 @@ my @mbn_types = ('no data', 'unsigned int', 'signed int', 'state', 'octet string
 sub listui {
   my $self = shift;
 
-  my $cards = $self->dbAll('SELECT a.addr, a.name, a.active, a.parent,
+  my $cards = $self->dbAll('SELECT a.addr, a.name, a.active, a.parent, (a.id).man, (a.id).prod, a.firm_major,
     (SELECT COUNT(*) FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major) AS objects,
     (SELECT number FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major AND t.description = \'Slot number\') AS slot_obj,
     (SELECT name FROM addresses b WHERE (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id) AS parent_name,
     (SELECT COUNT(*) FROM node_config n WHERE a.addr = n.addr) AS config_cnt,
-    (SELeCT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt
+    (SELECT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt,
+    (SELECT COUNT(*) FROM predefined_node_config p WHERE (a.id).man = p.man_id AND (a.id).prod = p.prod_id AND a.firm_major = p.firm_major) AS predefined_cnt
     FROM slot_config s
     RIGHT JOIN addresses a ON a.addr = s.addr WHERE s.addr IS NULL AND ((a.parent).man != 1 OR (a.parent).prod != 12) AND NOT ((a.id).man=(a.parent).man AND (a.id).prod=(a.parent).prod AND (a.id).id=(a.parent).id)
     ORDER BY NULLIF((a.parent).man, 0), (a.parent).prod, (a.parent).id, NOT a.active, (a.id).man, (a.id).prod, (a.id).id');
   $self->htmlHeader(title => 'Surface configuration', page => 'surface');
   table;
-   Tr; th colspan => 5, 'Surface configuration'; end;
+   Tr; th colspan => 7, 'Surface configuration'; end;
    my $prev_parent='';
    for my $c (@$cards) {
      $c->{parent} =~ s/\((\d+),(\d+),(\d+)\)/sprintf($1?'%04X:%04X:%04X':'-', $1, $2, $3)/e;
@@ -41,13 +45,13 @@ sub listui {
        if ($prev_parent) {
          Tr class => 'empty'; th colspan => 5; end;
        }
-       Tr; th colspan => 5, !$c->{parent_name} ? 'No parent' : "$c->{parent} ($c->{parent_name})"; end;
+       Tr; th colspan => 7, !$c->{parent_name} ? 'No parent' : "$c->{parent} ($c->{parent_name})"; end;
        Tr;
          th 'MambaNet Address';
          th 'Node name';
          th 'Default';
          th 'Config';
-         th 'Settings';
+         th colspan => 3, 'Settings';
        end;
        $prev_parent = $c->{parent};
      }
@@ -64,6 +68,20 @@ sub listui {
          a href => '#', class => 'off', 'no objects';
        }
       end;
+      td;
+       if($c->{objects} and $c->{predefined_cnt}) {
+         a href => '#', onclick => sprintf('return conf_predefined("%08X", this)', $c->{addr}), 'import';
+       } else {
+         a href => '#', class => 'off', 'no import data';
+       }
+      end;
+      td;
+       if($c->{objects} and $c->{config_cnt}) {
+         a href => '#', onclick => sprintf('return conf_text("surface", "%08X", "export", "Config name", this)', $c->{addr}), 'export';
+       } else {
+         a href => '#', class => 'off', 'no export data';
+       }
+      end;
      end;
    }
   end;
@@ -77,12 +95,13 @@ sub list {
   my $cards = $self->dbAll('SELECT a.addr, a.name, s.slot_nr, s.input_ch_cnt, s.output_ch_cnt, a.active,
     (SELECT COUNT(*) FROM templates t WHERE t.man_id = (a.id).man AND t.prod_id = (a.id).prod AND t.firm_major = a.firm_major) AS objects,
     (SELECT COUNT(*) FROM node_config n WHERE a.addr = n.addr) AS config_cnt,
-    (SELECT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt
+    (SELECT COUNT(*) FROM defaults d WHERE a.addr = d.addr) AS default_cnt,
+    (SELECT COUNT(*) FROM predefined_node_config p WHERE (a.id).man = p.man_id AND (a.id).prod = p.prod_id AND a.firm_major = p.firm_major) AS predefined_cnt
     FROM slot_config s JOIN addresses a ON a.addr = s.addr ORDER BY s.slot_nr');
 
   $self->htmlHeader(title => 'Rack configuration', page => 'rack');
   table;
-   Tr; th colspan => 8, 'Rack configuration'; end;
+   Tr; th colspan => 10, 'Rack configuration'; end;
    Tr;
     th 'Slot';
     th 'MambaNet Address';
@@ -91,7 +110,7 @@ sub list {
     th 'Outputs';
     th 'Default';
     th 'Config';
-    th 'Settings';
+    th colspan => 3, 'Settings';
    end;
    for my $c (@$cards) {
      Tr !$c->{active} ? (class => 'inactive') : ();
@@ -107,6 +126,20 @@ sub list {
          a href => sprintf('/rack/%08x', $c->{addr}); lit 'configure &raquo;'; end;
        } else {
          a href => '#', class => 'off', 'no objects';
+       }
+      end;
+      td;
+       if($c->{objects} and $c->{predefined_cnt}) {
+         a href => '#', onclick => sprintf('return conf_predefined("%08X", this)', $c->{addr}), 'import';
+       } else {
+         a href => '#', class => 'off', 'no import data';
+       }
+      end;
+      td;
+       if($c->{objects} and $c->{config_cnt}) {
+         a href => '#', onclick => sprintf('return conf_text("rack", "%08X", "export", "Config name", this)', $c->{addr}), 'export';
+       } else {
+         a href => '#', class => 'off', 'no export data';
        }
       end;
      end;
@@ -341,6 +374,78 @@ sub setdefault {
   _default $f->{field}, $obj;
 }
 
+sub ajax {
+  my $self = shift;
+
+  my $f = $self->formValidate(
+    { name => 'field', template => 'asciiprint' }, # should have an enum property
+    { name => 'item', required => 1, regex => [qr/^[0-9a-f]{8}$/i] },
+    { name => 'export', required => 0, maxlength => 32, minlength => 1 },
+    { name => 'import', required => 0, maxlength => 32, minlength => 1 },
+  );
+  return 404 if $f->{_err};
+
+  my $i = $self->dbRow("SELECT (id).man, (id).prod, firm_major FROM addresses WHERE addr = ?  ", oct "0x$f->{item}");
+  $self->dbExec("DELETE FROM predefined_node_config WHERE man_id = ? AND prod_id = ? AND firm_major = ? AND cfg_name = ?", $i->{man}, $i->{prod}, $i->{firm_major}, $f->{export});
+
+  my $func = $self->dbRow("SELECT MIN((func).seq) AS min FROM node_config WHERE addr = ?  ", oct "0x$f->{item}");
+  my $obj_cfgs = $self->dbAll("SELECT object, (func).type, (func).seq, (func).func FROM node_config WHERE addr = ?  ", oct "0x$f->{item}");
+  for my $o (@$obj_cfgs) {
+    my $new_func = sprintf("(%d,%d,%d)", $o->{type}, $o->{seq}-$func->{min}, $o->{func});
+    $self->dbExec("INSERT INTO predefined_node_config (man_id, prod_id, firm_major, cfg_name, object, func) VALUES(?,?,?,?,?,?)", $i->{man}, $i->{prod}, $i->{firm_major}, $f->{export}, $o->{object}, $new_func);
+  }
+  txt $f->{export};
+}
+
+sub loadpre {
+  my $self = shift;
+
+  my $f = $self->formValidate(
+    { name => 'addr', required => 1, regex => [qr/^[0-9a-f]{8}$/i] },
+  );
+  return 404 if $f->{_err};
+
+  my $pre_cfg = $self->dbAll("SELECT p.cfg_name, p.man_id, p.prod_id, p.firm_major, COUNT(*) AS cnt
+                              FROM predefined_node_config p
+                              JOIN addresses a ON (a.id).man = p.man_id AND (a.id).prod = p.prod_id AND a.firm_major = p.firm_major
+                              WHERE a.addr = ?
+                              GROUP BY p.cfg_name, p.man_id, p.prod_id, p.firm_major
+                              ORDER BY p.man_id, p.prod_id, p.firm_major", oct "0x$f->{addr}");
+
+  div id => 'pre_main'; Select;
+  for my $p (@$pre_cfg)
+  {
+    option value => "$p->{cfg_name}", $p->{cfg_name}." (".$p->{cnt}.")";
+  }
+  end;
+}
+
+sub setpre {
+  my $self = shift;
+
+  my $f = $self->formValidate(
+    { name => 'addr', required => 1, regex => [qr/^[0-9a-f]{8}$/i] },
+    { name => 'predefined', required => 1, maxlength => 32, minlength => 1 },
+    { name => 'offset', required => 1, template => 'int' },
+  );
+  return 404 if $f->{_err};
+
+  $self->dbExec("DELETE FROM node_config WHERE addr = ?", oct "0x$f->{addr}");
+
+  #first insert all functions with sequence number
+  $self->dbExec("INSERT INTO node_config (addr, object, func.type, func.seq, func.func)
+                 SELECT a.addr, p.object, (p.func).type, (p.func).seq+$f->{offset}, (func).func
+                 FROM predefined_node_config p
+                 JOIN addresses a ON (a.id).man = p.man_id AND (a.id).prod = p.prod_id AND a.firm_major = p.firm_major
+                 WHERE a.addr = ? AND p.cfg_name = ? AND (p.func).type != 4", oct "0x$f->{addr}", $f->{predefined});
+  #nex insert all functions without sequence number
+  $self->dbExec("INSERT INTO node_config (addr, object, func.type, func.seq, func.func)
+                 SELECT a.addr, p.object, (p.func).type, (p.func).seq, (func).func
+                 FROM predefined_node_config p
+                 JOIN addresses a ON (a.id).man = p.man_id AND (a.id).prod = p.prod_id AND a.firm_major = p.firm_major
+                 WHERE a.addr = ? AND p.cfg_name = ? AND (p.func).type = 4", oct "0x$f->{addr}", $f->{predefined});
+  txt $f->{predefined};
+}
 
 1;
 
