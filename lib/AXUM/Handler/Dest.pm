@@ -29,7 +29,7 @@ sub _col {
   my $v = $d->{$n};
 
   if($n eq 'pos') {
-    a href => '#', onclick => sprintf('return conf_select("dest", %d, "%s", "%s", this, "dest_list")', $d->{number}, $n, "$d->{pos}"), $d->{pos};
+    a href => '#', onclick => sprintf('return conf_select("dest", %d, "%s", "%s", this, "dest_list", "Place before ", "Move")', $d->{number}, $n, "$d->{pos}"), $d->{pos};
   }
   if($n eq 'level') {
     a href => '#', onclick => sprintf('return conf_level("dest", %d, "level", %f, this)', $d->{number}, $v),

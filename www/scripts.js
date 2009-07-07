@@ -140,14 +140,20 @@ function conf_text(page, item, field, value, obj) {
 }
 
 
-function conf_select(page, item, field, value, obj, list) {
+function conf_select(page, item, field, value, obj, list, listname, buttonname) {
   var d = create_input(obj, function(f) {
     var s = f.getElementsByTagName('select')[0];
     conf_set(page, item, field, s.options[s.selectedIndex].value, obj);
   });
   if(!d) return false;
-  d.innerHTML = document.getElementById(list).innerHTML
-    +'<input type="submit" value="Save" class="button" />';
+  d.innerHTML = '';
+  if (listname) d.innerHTML += listname;
+  d.innerHTML += document.getElementById(list).innerHTML;
+  if (buttonname) {
+    d.innerHTML += '<input type="submit" value="'+buttonname+'" class="button" />';
+  } else {
+    d.innerHTML += '<input type="submit" value="Save" class="button" />';
+  }
   d = d.getElementsByTagName('select')[0];
   d.style.display = 'inline';
   for(var i=0; i<d.length; i++)

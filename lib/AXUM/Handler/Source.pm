@@ -29,7 +29,7 @@ sub _col {
   my $v = $d->{$n};
 
   if($n eq 'pos') {
-    a href => '#', onclick => sprintf('return conf_select("source", %d, "%s", "%s", this, "source_list")', $d->{number}, $n, "$d->{pos}"), $d->{pos};
+    a href => '#', onclick => sprintf('return conf_select("source", %d, "%s", "%s", this, "source_list", "Place before ", "Move")', $d->{number}, $n, "$d->{pos}"), $d->{pos};
   }
   if($n eq 'label') {
     (my $jsval = $v) =~ s/\\/\\\\/g;
