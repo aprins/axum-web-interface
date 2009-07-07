@@ -22,7 +22,9 @@ sub overview {
   $p = $p->{p};
 
   my $mod = $self->dbAll(q|
-    SELECT m.number, a.label AS label_a, a.active AS active_a, b.label AS label_b, b.active AS active_b, mod_level, mod_on_off
+    SELECT m.number, a.label AS label_a, a.active AS active_a, b.label AS label_b, b.active AS active_b, 
+           insert_on_off_a, lc_on_off_a, eq_on_off_a, dyn_on_off_a,
+           insert_on_off_b, lc_on_off_b, eq_on_off_b, dyn_on_off_b
     FROM module_config m
     LEFT JOIN matrix_sources a ON a.number = m.source_a
     LEFT JOIN matrix_sources b ON b.number = m.source_b
@@ -63,21 +65,49 @@ sub overview {
        end;
      }
      Tr $p > $dspcount ? (class => 'inactive') : ();
-      th 'Level';
+      th 'Processing A';
       for (@m) {
-        td;
-         a href => "/module/$mod->[$_]{number}", $mod->[$_]{mod_level}==-140 ? (class => 'off') : (),
-           sprintf '%.1f dB', $mod->[$_]{mod_level};
-        end;
+        my $active = ($mod->[$_]{lc_on_off_a} or
+                      $mod->[$_]{insert_on_off_a} or
+                      $mod->[$_]{eq_on_off_a} or
+                      $mod->[$_]{dyn_on_off_a});
+
+         td;
+          a href => "/module/$mod->[$_]{number}", $active ? () : (class => 'off');
+           txt $mod->[$_]{lc_on_off_a} ? ('LC ') : ();
+           txt $mod->[$_]{insert_on_off_a} ? ('Ins ') : ();
+           txt $mod->[$_]{eq_on_off_a} ? ('EQ ') : ();
+           txt $mod->[$_]{dyn_on_off_a} ? ('Dyn ') : ();
+           txt (($mod->[$_]{lc_on_off_a} or
+                $mod->[$_]{insert_on_off_a} or
+                $mod->[$_]{eq_on_off_a} or
+                $mod->[$_]{dyn_on_off_a}) ? () : ('none'));
+
+          end;
+         end;
       }
      end;
      Tr $p > $dspcount ? (class => 'inactive') : ();
-      th 'State';
+      th 'Processing B';
       for (@m) {
-        td;
-         a href => "/module/$mod->[$_]{number}",
-           $mod->[$_]{mod_on_off} ? 'on' : (class => 'off', 'off');
-        end;
+        my $active = ($mod->[$_]{lc_on_off_b} or
+                      $mod->[$_]{insert_on_off_b} or
+                      $mod->[$_]{eq_on_off_b} or
+                      $mod->[$_]{dyn_on_off_b});
+
+         td;
+          a href => "/module/$mod->[$_]{number}", $active ? () : (class => 'off');
+           txt $mod->[$_]{lc_on_off_b} ? ('LC ') : ();
+           txt $mod->[$_]{insert_on_off_b} ? ('Ins ') : ();
+           txt $mod->[$_]{eq_on_off_b} ? ('EQ ') : ();
+           txt $mod->[$_]{dyn_on_off_b} ? ('Dyn ') : ();
+           txt (($mod->[$_]{lc_on_off_b} or
+                $mod->[$_]{insert_on_off_b} or
+                $mod->[$_]{eq_on_off_b} or
+                $mod->[$_]{dyn_on_off_b}) ? () : ('none'));
+
+          end;
+         end;
       }
      end;
      Tr $p > $dspcount ? (class => 'inactive') : ();
