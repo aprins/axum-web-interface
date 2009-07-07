@@ -125,14 +125,20 @@ function conf_freq( page, item, field, value, obj) { return conf_number('Hz', pa
 function conf_proc( page, item, field, value, obj) { return conf_number('%',  page, item, field, value, obj); }
 
 
-function conf_text(page, item, field, value, obj) {
+function conf_text(page, item, field, value, obj, textname, buttonname) {
   var d = create_input(obj, function(f) {
     conf_set(page, item, field, f.getElementsByTagName('input')[0].value, obj);
   });
   if(!d) return false;
   var size = value.length > 10 ? value.length+5 : 10;
-  d.innerHTML = '<input type="text" value="'+qq(value)+'" size="'+size+'" class="text">'
-    +'<input type="submit" value="Save" class="button" />';
+  d.innerHTML = '';
+  if(textname) d.innerHTML += textname;
+  d.innerHTML += '<input type="text" value="'+qq(value)+'" size="'+size+'" class="text">';
+  if(buttonname) {
+    d.innerHTML += '<input type="submit" value="'+buttonname+'" class="button" />';
+  } else {
+    d.innerHTML += '<input type="submit" value="Save" class="button" />';
+  }
   d = d.getElementsByTagName('input')[0];
   d.focus();
   d.select();
@@ -304,7 +310,7 @@ function conf_predefined(addr, obj) {
   if(!d) return false;
   d.innerHTML = 'loading configuration list...';
   ajax('/ajax/loadpre?addr='+addr, function(h) {
-    d.innerHTML = h.responseText + ' Offset<input type="text" id="seq" maxlength="4" size="4" value="0"> <input type="submit" value="Save" class="button" />';
+    d.innerHTML = h.responseText + ' Offset<input type="text" id="seq" maxlength="4" size="4" value="0"> <input type="submit" value="Import" class="button" />';
     l = d.getElementsByTagName('div');
     for(i=0; i<l.length; i++)
       if(l[i].id != 'pre_main')

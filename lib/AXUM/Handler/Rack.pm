@@ -77,7 +77,7 @@ sub listui {
       end;
       td;
        if($c->{objects} and $c->{config_cnt}) {
-         a href => '#', onclick => sprintf('return conf_text("surface", "%08X", "export", "Config name", this)', $c->{addr}), 'export';
+         a href => '#', onclick => sprintf('return conf_text("surface", "%08X", "export", "Config name", this, "Name ", "Export")', $c->{addr}), 'export';
        } else {
          a href => '#', class => 'off', 'no export data';
        }
