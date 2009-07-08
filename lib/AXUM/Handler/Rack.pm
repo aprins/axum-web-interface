@@ -237,8 +237,8 @@ sub funclist {
 
   my @buss = map $_->{label}, @{$self->dbAll('SELECT label FROM buss_config ORDER BY number')};
   my @mbuss = map $_->{label}, @{$self->dbAll('SELECT label FROM monitor_buss_config ORDER BY number')};
-  my $src = $self->dbAll('SELECT number, label FROM src_config ORDER BY number');
-  my $dest = $self->dbAll('SELECT number, label FROM dest_config ORDER BY number');
+  my $src = $self->dbAll('SELECT number, label FROM src_config ORDER BY pos');
+  my $dest = $self->dbAll('SELECT number, label FROM dest_config ORDER BY pos');
   my $dspcount = $self->dbRow('SELECT dsp_count() AS cnt')->{cnt};
 
   my $where = join ' OR ',
