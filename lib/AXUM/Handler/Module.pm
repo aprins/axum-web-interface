@@ -59,7 +59,7 @@ sub overview {
         for (@m) {
           td;
            a href => "/module/$mod->[$_]{number}",
-            !$mod->[$_]{"active_$src"} || !$mod->[$_]{"label_$src"} ? (class => 'off') : (), $mod->[$_]{"label_$src"}||'none';
+            !$mod->[$_]{"active_$src"} || !$mod->[$_]{"label_$src"} || ($mod->[$_]{"label_$src"} eq 'none') ? (class => 'off') : (), $mod->[$_]{"label_$src"}||'none';
           end;
         }
        end;
@@ -133,7 +133,7 @@ sub _col {
 
   if($n eq 'source_a' || $n eq 'source_b' || $n eq 'insert_source') {
     a href => '#', onclick => sprintf('return conf_select("module", %d, "%s", %d, this, "matrix_sources")', $d->{number}, $n, $v),
-      !$v || !$lst->[$v-1]{active} ? (class => 'off') : (), $v ? $lst->[$v-1]{label} : 'none';
+      !$v || !$lst->[$v]{active} ? (class => 'off') : (), $v ? $lst->[$v]{label} : 'none';
   }
   if($n eq 'gain' || $n eq 'mod_level') {
     a href => '#', onclick => sprintf('return conf_level("module", %d, "%s", %f, this)', $d->{number}, $n, $v),

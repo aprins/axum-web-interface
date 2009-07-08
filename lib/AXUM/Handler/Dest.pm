@@ -49,7 +49,7 @@ sub _col {
   if($n eq 'source' || $n eq 'mix_minus_source') {
     a href => '#', onclick => sprintf('return conf_select("dest", %d, "%s", %d, this, "%s")',
         $d->{number}, $n, $v, $n eq 'source' ? 'source_items' : 'mix_minus_items'),
-      !$v || !$lst->[$v-1]{active} ? (class => 'off') : (), $v ? $lst->[$v-1]{label} : 'none';
+      !$v || !$lst->[$v]{active} ? (class => 'off') : (), $v ? $lst->[$v]{label} : 'none';
   }
 }
 

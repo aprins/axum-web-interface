@@ -16,7 +16,7 @@ sub _col {
   my($d, $lst) = @_;
   my $v = $d->{source};
   a href => '#', onclick => sprintf('return conf_select("talkback", %d, "source", %d, this, "matrix_sources")', $d->{number}, $v),
-    !$v || !$lst->[$v-1]{active} ? (class => 'off') : (), $v ? $lst->[$v-1]{label} : 'none';
+    !$v || !$lst->[$v]{active} ? (class => 'off') : (), $v ? $lst->[$v]{label} : 'none';
 }
 
 

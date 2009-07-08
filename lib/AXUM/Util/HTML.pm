@@ -88,7 +88,6 @@ sub htmlSourceList {
   my($self, $lst, $name, $min) = @_;
   div id => $name, class => 'hidden';
    Select;
-    option value => 0, 'none';
     my $last = '';
     for (@$lst) {
       next if $min && $_->{type} eq 'n-1';
