@@ -6,8 +6,8 @@ use YAWF ':html';
 
 
 YAWF::register(
-  qr{mambanet} => \&list,
-  qr{mambanet/predefined} => \&listpre,
+  qr{service/mambanet} => \&list,
+  qr{service/predefined} => \&listpre,
   qr{ajax/mambanet} => \&ajax,
   qr{ajax/id_list} => \&id_list,
   qr{ajax/change_conf} => \&change_conf,
@@ -62,7 +62,7 @@ sub list {
     LEFT JOIN addresses b ON (b.id).man = (a.parent).man AND (b.id).prod = (a.parent).prod AND (b.id).id = (a.parent).id
     ORDER BY a.addr');
 
-  $self->htmlHeader(title => 'MambaNet configuration', page => 'mambanet');
+  $self->htmlHeader(title => 'MambaNet configuration', page => 'service', section => 'mambanet');
   table;
    Tr; th colspan => 9, 'MambaNet configuration'; end;
    Tr;
@@ -128,7 +128,7 @@ sub listpre {
                               GROUP BY p.cfg_name, p.man_id, p.prod_id, p.firm_major
                               ORDER BY p.man_id, p.prod_id, p.firm_major");
 
-  $self->htmlHeader(title => 'MambaNet predefined configurations', page => 'mambanet', section => 'predefined');
+  $self->htmlHeader(title => 'MambaNet predefined configurations', page => 'service', section => 'predefined');
   table;
    Tr; th colspan => 6, 'MambaNet predefined configuration'; end;
    Tr;

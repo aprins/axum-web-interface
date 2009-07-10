@@ -65,11 +65,15 @@ sub htmlHeader {
          a href => "/rack/$o{section}", "Address $o{section}";
        }
      }
-     if($o{page} eq 'mambanet') {
-       a href => '/mambanet', 'MambaNet configuration';
+     if($o{page} eq 'service') {
+       a href => '/service', 'Service';
+       if ($o{section} eq 'mambanet') {
+         lit " &raquo; ";
+         a href => '/service/mambanet', 'MambaNet configuration';
+       }
        if($o{section} eq 'predefined') {
          lit " &raquo; ";
-         a href => '/mambanet/predefined', 'Predefined';
+         a href => '/service/predefined', 'Predefined';
        }
      }
     end;
