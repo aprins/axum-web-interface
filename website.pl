@@ -15,7 +15,7 @@ use YAWF;
 
 YAWF::init(
   namespace => 'AXUM',
-  db_login  => [ 'dbi:Pg:host=192.168.0.58;dbname=axum', 'axum', '' ],
+  db_login  => [ 'dbi:Pg:host=localhost;dbname=axum', 'axum', '' ],
   logfile => "$ROOT/log", # this logfile is mostly for debugging,
                           # can be disabled on production box
   debug => 1,
