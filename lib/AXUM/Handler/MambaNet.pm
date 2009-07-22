@@ -50,7 +50,7 @@ sub list {
   if(!$f->{_err}) {
     $f->{del} ? ($self->dbExec('DELETE FROM addresses WHERE addr = ?', $f->{del})) : ();
     $f->{refresh} ? ($self->dbExec('UPDATE addresses SET refresh = TRUE WHERE addr = ?', $f->{refresh})) : ();
-    ($f->{del} or $f->{refresh}) ? (return $self->resRedirect('/mambanet')) : ();
+    ($f->{del} or $f->{refresh}) ? (return $self->resRedirect('/service/mambanet')) : ();
   }
 
   my $cards = $self->dbAll('SELECT a.addr, a.id, a.name, a.active, a.engine_addr, a.parent, a.firm_major, b.name AS parent_name,
@@ -90,12 +90,12 @@ sub list {
       td !$c->{temp_cnt} ? (class => 'inactive') : (), $c->{temp_cnt};
       td valign => 'middle';
        if (!$c->{active}) {
-         a href => '/mambanet?del='.$c->{addr}, title => 'Delete';
+         a href => '/service/mambanet?del='.$c->{addr}, title => 'Delete';
           img src => '/images/delete.png', alt => 'delete';
          end;
        }
        else {
-         a href => '/mambanet?refresh='.$c->{addr}, title => 'Refresh';
+         a href => '/service/mambanet?refresh='.$c->{addr}, title => 'Refresh';
            img src => '/images/refresh.png', alt => 'refresh';
          end;
        }
@@ -120,7 +120,7 @@ sub listpre {
 
   if(!$f->{_err}) {
     $f->{del} ? ($self->dbExec('DELETE FROM predefined_node_config WHERE cfg_name = ? AND man_id = ? AND prod_id = ? AND firm_major = ?', $f->{del}, $f->{man}, $f->{prod}, $f->{firm})) : ();
-    $f->{del} ? (return $self->resRedirect('/mambanet/predefined')) : ();
+    $f->{del} ? (return $self->resRedirect('/service/predefined')) : ();
   }
 
   my $pre_cfg = $self->dbAll("SELECT p.cfg_name, p.man_id, p.prod_id, p.firm_major, COUNT(*) AS cnt
@@ -148,7 +148,7 @@ sub listpre {
       td $p->{cnt};
       td;
        $p->{cfg_name} =~ s/([^A-Za-z0-9])/sprintf("%%%02X", ord($1))/seg;
-       a href => '/mambanet/predefined?del='.$p->{cfg_name}.";man=".$p->{man_id}.";prod=".$p->{prod_id}.";firm=".$p->{firm_major}, title => 'Delete';
+       a href => '/service/predefined?del='.$p->{cfg_name}.";man=".$p->{man_id}.";prod=".$p->{prod_id}.";firm=".$p->{firm_major}, title => 'Delete';
         img src => '/images/delete.png', alt => 'delete';
        end;
       end;
