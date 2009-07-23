@@ -198,9 +198,10 @@ sub generate {
       $c->{name} =~ s/Axum-Rack-//g;
       $self->dbExec("INSERT INTO src_config (number, label, input1_addr, input1_sub_ch, input2_addr, input2_sub_ch) VALUES ($num, '$c->{name} $cnt_src', $c->{addr}, ".($i+1).", $c->{addr}, ".($i+2).");");
       $cnt_src++;
+
+      $self->dbExec("SELECT src_config_renumber()");
     }
   }
-  $self->dbExec("SELECT src_config_renumber()");
   $self->resRedirect('/source', 'post');
 }
 
