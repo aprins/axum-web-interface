@@ -41,7 +41,7 @@ input.button { border: 1px solid #666; background-color: #bbb }
 optgroup option { padding-left: 15px }
 option.off { color: #bbb }
 
-p.navigate { display: inline; float: right }
+p.navigate { display: inline; float: right; margin-left:7px}
 p.navigate a { margin-right: 5px }
 p.navigate a.sel { text-decoration: none; color: #000 }
 
