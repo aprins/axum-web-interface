@@ -4,6 +4,7 @@ package AXUM::Handler::ModuleRouting;
 use strict;
 use warnings;
 use YAWF ':html';
+use Data::Dumper 'Dumper';
 
 
 YAWF::register(
@@ -44,7 +45,7 @@ sub route {
 
   my $bus = $self->dbAll('SELECT number, label FROM buss_config ORDER BY number');
   my $mod = $self->dbRow('SELECT number, !s FROM module_config WHERE number = ?',
-    join(', ', map +("${_}_level", "${_}_on_off", "${_}_pre_post", "${_}_balance", "${_}_assignment"), @busses), $nr);
+    join(', ', map +("${_}_level[1]", "${_}_on_off[1]", "${_}_pre_post[1]", "${_}_balance[1]", "${_}_assignment"), @busses), $nr);
   return 404 if !$mod->{number};
 
   $self->htmlHeader(page => 'modulerouting', section => $nr, title => "Module $nr routing configuration");
@@ -79,7 +80,6 @@ sub route {
 
 sub ajax {
   my $self = shift;
-
   my $f = $self->formValidate(
     { name => 'field', template => 'asciiprint' },
     { name => 'item', template => 'int' },
@@ -90,12 +90,14 @@ sub ajax {
       { name => "${_}_balance", required => 0, enum => [0..2] },
     ), @busses
   );
+  return 404 if $f->{_err};
 
   my %set;
   defined $f->{$_} && ($f->{$_} *= 511)
     for (map "${_}_balance", @busses);
-  defined $f->{$_} && ($set{"$_ = ?"} = $f->{$_})
+  defined $f->{$_} && ($set{$_."[1] = ?" } = $f->{$_})
     for (map +("${_}_level", "${_}_on_off", "${_}_pre_post", "${_}_balance"), @busses);
+
   $self->dbExec('UPDATE module_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
   _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} };
 }

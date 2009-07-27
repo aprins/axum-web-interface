@@ -36,11 +36,11 @@ sub _col {
     $jsval =~ s/"/\\"/g;
     a href => '#', onclick => sprintf('return conf_text("source", %d, "label", "%s", this)', $d->{number}, $jsval), $v;
   }
-  if($n eq 'gain') {
-    a href => '#', onclick => sprintf('return conf_level("source", %d, "gain", %f, this)', $d->{number}, $v),
+  if($n eq 'input_gain') {
+    a href => '#', onclick => sprintf('return conf_level("source", %d, "input_gain", %f, this)', $d->{number}, $v),
       $v == 30 ? (class => 'off') : (), sprintf '%.1f dB', $v;
   }
-  if($n eq 'phantom' || $n eq 'pad') {
+  if($n eq 'input_phantom' || $n eq 'input_pad') {
     a href => '#', onclick => sprintf('return conf_set("source", %d, "%s", "%s", this)', $d->{number}, $n, $v?0:1),
       !$v ? (class => 'off', 'no') : 'yes';
   }
@@ -104,7 +104,7 @@ sub source {
 
   my @cols = ((map "redlight$_", 1..8), (map "monitormute$_", 1..16));
   my $src = $self->dbAll(q|SELECT pos, number, label, input1_addr, input1_sub_ch, input2_addr,
-    input2_sub_ch, phantom, pad, gain, !s FROM src_config ORDER BY pos|, join ', ', @cols);
+    input2_sub_ch, input_phantom, input_pad, input_gain, !s FROM src_config ORDER BY pos|, join ', ', @cols);
 
   $self->htmlHeader(title => 'Source configuration', page => 'source');
   # create list of available channels for javascript
@@ -157,7 +157,7 @@ sub source {
       td; _col 'label', $s; end;
       td; _col 'input1', $s, $chan; end;
       td; _col 'input2', $s, $chan; end;
-      for (qw|phantom pad gain|, map "redlight$_", 1..8) {
+      for (qw|input_phantom input_pad input_gain|, map "redlight$_", 1..8) {
         td; _col $_, $s; end;
       }
       for (@$mb) {
@@ -213,9 +213,9 @@ sub ajax {
     { name => 'field', template => 'asciiprint' },
     { name => 'item', template => 'int' },
     { name => 'label', required => 0, maxlength => 32, minlength => 1 },
-    { name => 'phantom', required => 0, enum => [0,1] },
-    { name => 'pad', required => 0, enum => [0,1] },
-    { name => 'gain', required => 0, regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ] },
+    { name => 'input_phantom', required => 0, enum => [0,1] },
+    { name => 'input_pad', required => 0, enum => [0,1] },
+    { name => 'input_gain', required => 0, regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ] },
     { name => 'input1', required => 0, regex => [ qr/[0-9]+_[0-9]+/, 0 ] },
     { name => 'input2', required => 0, regex => [ qr/[0-9]+_[0-9]+/, 0 ] },
     (map +{ name => "redlight$_", required => 0, enum => [0,1] }, 1..8),
@@ -239,7 +239,7 @@ sub ajax {
   } else {
     my %set;
     defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
-      for(qw|label phantom pad gain|, (map "redlight$_", 1..8), (map "monitormute$_", 1..16));
+      for(qw|label input_phantom input_pad input_gain|, (map "redlight$_", 1..8), (map "monitormute$_", 1..16));
     defined $f->{$_} and $f->{$_} =~ /([0-9]+)_([0-9]+)/ and ($set{$_.'_addr = ?, '.$_.'_sub_ch = ?'} = [ $1, $2 ])
       for('input1', 'input2');
 
