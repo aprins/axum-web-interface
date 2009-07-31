@@ -5,11 +5,12 @@ use strict;
 use warnings;
 use YAWF ':html';
 
-
 YAWF::register(
-  qr{source}            => \&source,
-  qr{source/generate}   => \&generate,
-  qr{ajax/source}       => \&ajax,
+  qr{source}            	  => \&source,
+  qr{source/([1-9][0-9]*)/preset} => \&preset,
+  qr{source/generate}   	  => \&generate,
+  qr{ajax/source}       	  => \&ajax,
+  qr{ajax/source/([1-9][0-9]*)/eq} => \&eqajax,
 );
 
 
@@ -25,7 +26,7 @@ sub _channels {
 
 
 sub _col {
-  my($n, $d) = @_;
+  my($n, $d, $lst) = @_;
   my $v = $d->{$n};
 
   if($n eq 'pos') {
@@ -54,6 +55,92 @@ sub _col {
       'return conf_select("source", %d, "%s", "%s", this, "input_channels")', $d->{number}, $n, "$v->{addr}_$v->{channel}"),
       sprintf('Slot %d ch %d', $v->{slot_nr}, $v->{channel});
   }
+  if ($n eq 'preset') {
+
+    a href => "/source/$d->{number}/preset",
+    ($d->{use_gain_preset} ||
+     $d->{use_lc_preset} ||
+     $d->{use_insert_preset} ||
+     $d->{use_eq_preset} ||
+     $d->{use_dyn_preset} ||
+     $d->{use_routing_preset}) ? ('used') : (class => 'off', 'not used');
+  }
+  if($n eq 'insert_source') {
+    a href => '#', onclick => sprintf('return conf_select("source", %d, "%s", %d, this, "matrix_sources")', $d->{number}, $n, $v),
+      !$v || !$lst->[$v]{active} ? (class => 'off') : (), $v ? $lst->[$v]{label} : 'none';
+  }
+  if($n eq 'gain') {
+    a href => '#', onclick => sprintf('return conf_level("source", %d, "%s", %f, this)', $d->{number}, $n, $v),
+      $v == 0 ? (class => 'off') : (), sprintf '%.1f dB', $v;
+  }
+  if($n =~ /.+_on_off/) {
+    a href => '#', onclick => sprintf('return conf_set("source", %d, "%s", "%s", this)', $d->{number}, $n, $v?0:1),
+      $v ? 'on' : (class => 'off', 'off');
+  }
+  if($n eq 'lc_frequency') {
+    a href => '#', onclick => sprintf('return conf_freq("source", %d, "lc_frequency", %d, this)', $d->{number}, $v),
+      sprintf '%d Hz', $v;
+  }
+  if($n eq 'dyn_amount') {
+    a href => '#', onclick => sprintf('return conf_proc("source", %d, "dyn_amount", %d, this)', $d->{number}, $v),
+      sprintf '%d%%', $v;
+  }
+  if($n =~ /use_.+/) {
+    a href => '#', onclick => sprintf('return conf_set("source", %d, "%s", %d, this)', $d->{number}, $n, $v?0:1),
+     $v ? 'yes' : (class => 'off', 'no');
+  }
+}
+
+
+sub _eqtable {
+  my $d = shift;
+
+  my @eq_types = ('Off', 'HPF', 'Low shelf', 'Peaking', 'High shelf', 'LPF', 'BPF', 'Notch');
+
+  table;
+   Tr; th 'Band'; th 'Range'; th 'Level'; th 'Frequency'; th 'Bandwidth'; th 'Type'; end;
+   for my $i (1..6) {
+     Tr;
+      th $i;
+      td;
+       input type => 'text', class => 'text', size => 4, name => "eq_band_${i}_range",
+         value => $d->{"eq_band_${i}_range"};
+       txt ' dB';
+      end;
+      td;
+       input type => 'text', class => 'text', size => 4, name => "eq_band_${i}_level",
+         value => $d->{"eq_band_${i}_level"};
+       txt ' dB';
+      end;
+      td;
+       input type => 'text', class => 'text', size => 7, name => "eq_band_${i}_freq",
+         value => $d->{"eq_band_${i}_freq"};
+       txt ' Hz';
+      end;
+      td;
+       txt 'Q = ';
+       input type => 'text', class => 'text', size => 4, name => "eq_band_${i}_bw",
+         value => sprintf '%.1f', $d->{"eq_band_${i}_bw"};
+      end;
+      td;
+       Select style => 'width: 100px', name => "eq_band_${i}_type";
+        option value => $_, $_ == $d->{"eq_band_${i}_type"} ? (selected => 'selected') : (),
+          $eq_types[$_] for (0..$#eq_types);
+       end;
+      end;
+     end;
+   }
+   Tr;
+    td '';
+    td '0 - 18';
+    td '-Range - +Range';
+    td '20 - 20000';
+    td '0.1 - 10';
+    td;
+     input type => 'submit', style => 'float: right', class => 'button', value => 'Save';
+    end;
+   end;
+  end;
 }
 
 
@@ -82,7 +169,6 @@ sub _create_source {
   $self->resRedirect('/source', 'post');
 }
 
-
 sub source {
   my $self = shift;
 
@@ -98,13 +184,15 @@ sub source {
     $self->dbExec("SELECT src_config_renumber()");
     return $self->resRedirect('/source');
   }
-  
+
   my $mb = $self->dbAll('SELECT number, label, number <= dsp_count()*4 AS active
     FROM monitor_buss_config ORDER BY number');
 
   my @cols = ((map "redlight$_", 1..8), (map "monitormute$_", 1..16));
   my $src = $self->dbAll(q|SELECT pos, number, label, input1_addr, input1_sub_ch, input2_addr,
-    input2_sub_ch, input_phantom, input_pad, input_gain, !s FROM src_config ORDER BY pos|, join ', ', @cols);
+    input2_sub_ch, input_phantom, input_pad, input_gain,
+    use_gain_preset, use_lc_preset, use_insert_preset, use_eq_preset, use_dyn_preset, use_routing_preset,
+    !s FROM src_config ORDER BY pos|, join ', ', @cols);
 
   $self->htmlHeader(title => 'Source configuration', page => 'source');
   # create list of available channels for javascript
@@ -129,10 +217,11 @@ sub source {
   end;
 
   table;
-   Tr; th colspan => 32, 'Source configuration'; end;
+   Tr; th colspan => 34, 'Source configuration'; end;
    Tr;
     th '';
     th colspan => 6, '';
+    th 'Preset';
     th colspan => 8, 'Redlight';
     th colspan => 16, 'Monitor destination mute/dim';
     th '';
@@ -145,6 +234,7 @@ sub source {
     th 'Phantom';
     th 'Pad';
     th 'Gain';
+    th 'Configuration';
     th $_ for (1..8);
     th abbr => $_->{label}, $_->{active} ? ():(class => 'inactive'), id => "exp_monitormute$_->{number}", $_->{number}%10
       for (@$mb);
@@ -157,7 +247,11 @@ sub source {
       td; _col 'label', $s; end;
       td; _col 'input1', $s, $chan; end;
       td; _col 'input2', $s, $chan; end;
-      for (qw|input_phantom input_pad input_gain|, map "redlight$_", 1..8) {
+      for (qw|input_phantom input_pad input_gain|) {
+        td; _col $_, $s; end;
+      }
+      td; _col 'preset', $s; end;
+      for (map "redlight$_", 1..8) {
         td; _col $_, $s; end;
       }
       for (@$mb) {
@@ -205,9 +299,116 @@ sub generate {
   $self->resRedirect('/source', 'post');
 }
 
+sub preset {
+  my($self, $nr) = @_;
+
+  my $src = $self->dbRow(q|SELECT number,
+         label,
+         use_gain_preset,
+         gain,
+         use_lc_preset,
+         lc_frequency,
+         lc_on_off,
+         use_insert_preset,
+         insert_source,
+         insert_on_off,
+         use_eq_preset,
+         eq_band_1_range,
+         eq_band_1_level,
+         eq_band_1_freq,
+         eq_band_1_bw,
+         eq_band_1_type,
+         eq_band_2_range,
+         eq_band_2_level,
+         eq_band_2_freq,
+         eq_band_2_bw,
+         eq_band_2_type,
+         eq_band_3_range,
+         eq_band_3_level,
+         eq_band_3_freq,
+         eq_band_3_bw,
+         eq_band_3_type,
+         eq_band_4_range,
+         eq_band_4_level,
+         eq_band_4_freq,
+         eq_band_4_bw,
+         eq_band_4_type,
+         eq_band_5_range,
+         eq_band_5_level,
+         eq_band_5_freq,
+         eq_band_5_bw,
+         eq_band_5_type,
+         eq_band_6_range,
+         eq_band_6_level,
+         eq_band_6_freq,
+         eq_band_6_bw,
+         eq_band_6_type,
+         eq_on_off,
+         use_dyn_preset,
+         dyn_amount,
+         dyn_on_off,
+         use_routing_preset,
+         routing_preset
+         FROM src_config
+         WHERE number = ?|, $nr);
+  return 404 if !$src->{number};
+
+  my $pos_lst = $self->dbAll(q|SELECT number, label, type, active FROM matrix_sources ORDER BY pos|);
+  my $src_lst = $self->dbAll(q|SELECT number, label, type, active FROM matrix_sources ORDER BY number|);
+
+  $self->htmlHeader(page => 'source', section => $nr, title => "Preset for $src->{label}");
+  $self->htmlSourceList($pos_lst, 'matrix_sources');
+  div id => 'eq_table_container', class => 'hidden';
+   _eqtable($src);
+  end;
+  table;
+   Tr; th colspan => 4, "Preset for $src->{label}"; end;
+   Tr;
+    th '';
+    th 'Use';
+    th colspan => 2, 'Settings';
+   end;
+   Tr;
+    th 'Gain';
+    td; _col 'use_gain_preset', $src; end;
+    td colspan => 2; _col 'gain', $src; end;
+   end;
+   Tr;
+    th 'Low cut';
+    td; _col 'use_lc_preset', $src; end;
+    td; _col 'lc_on_off', $src; end;
+    td; _col 'lc_frequency', $src; end;
+   end;
+   Tr; th 'Insert';
+    td; _col 'use_insert_preset', $src; end;
+    td; _col 'insert_on_off', $src; end;
+    td; _col 'insert_source', $src, $src_lst; end;
+   end;
+   Tr; th 'EQ';
+    td; _col 'use_eq_preset', $src; end;
+    td; _col 'eq_on_off', $src; end;
+    td;
+     a href => "#", onclick => "return conf_eq(\"source\", this, $nr)"; lit 'EQ settings &raquo;'; end;
+    end;
+   end;
+   Tr; th 'Dynamics';
+    td; _col 'use_dyn_preset', $src; end;
+    td; _col 'dyn_on_off', $src; end;
+    td; _col 'dyn_amount', $src; end;
+   end;
+   Tr; th 'Routing';
+    td; _col 'use_routing_preset', $src; end;
+    td colspan => 2; _col 'routing_preset', $src; end;
+   end;
+  end;
+  $self->htmlFooter;
+}
 
 sub ajax {
   my $self = shift;
+
+  my @booleans = qw|use_gain_preset use_lc_preset use_insert_preset use_eq_preset use_dyn_preset use_routing_preset
+                    lc_on_off insert_on_off eq_on_off dyn_on_off|;
 
   my $f = $self->formValidate(
     { name => 'field', template => 'asciiprint' },
@@ -218,6 +419,11 @@ sub ajax {
     { name => 'input_gain', required => 0, regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ] },
     { name => 'input1', required => 0, regex => [ qr/[0-9]+_[0-9]+/, 0 ] },
     { name => 'input2', required => 0, regex => [ qr/[0-9]+_[0-9]+/, 0 ] },
+    { name => 'insert_source', required => 0, 'int' },
+    { name => 'gain', required => 0, regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ] },
+    { name => 'lc_frequency', required => 0, template => 'int' },
+    { name => 'dyn_amount', required => 0, template => 'int' },
+    (map +{ name => $_, required => 0, enum => [0,1] }, @booleans),
     (map +{ name => "redlight$_", required => 0, enum => [0,1] }, 1..8),
     (map +{ name => "monitormute$_", required => 0, enum => [0,1] }, 1..16),
     { name => 'pos', required => 0, template => 'int' },
@@ -239,7 +445,7 @@ sub ajax {
   } else {
     my %set;
     defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
-      for(qw|label input_phantom input_pad input_gain|, (map "redlight$_", 1..8), (map "monitormute$_", 1..16));
+      for(qw|label input_phantom input_pad input_gain gain lc_frequency insert_source dyn_amount routing_preset|, (map($_, @booleans)), (map "redlight$_", 1..8), (map "monitormute$_", 1..16));
     defined $f->{$_} and $f->{$_} =~ /([0-9]+)_([0-9]+)/ and ($set{$_.'_addr = ?, '.$_.'_sub_ch = ?'} = [ $1, $2 ])
       for('input1', 'input2');
 
@@ -248,7 +454,29 @@ sub ajax {
       my @l = split /_/, $f->{$f->{field}};
       _col $f->{field}, { number => $f->{item}, $1.'_addr' => $l[0], $1.'_sub_ch' => $l[1] }, _channels $self;
     } else {
-      _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} };
+      _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
+        $f->{field} =~ /source/ ? $self->dbAll(q|SELECT number, label, active FROM matrix_sources ORDER BY number|) : ();
     }
   }
 }
+
+sub eqajax {
+  my($self, $nr) = @_;
+
+  my @num = (regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ]);
+  my $f = $self->formValidate(map +(
+    { name => "eq_band_${_}_range", @num },
+    { name => "eq_band_${_}_level", @num },
+    { name => "eq_band_${_}_freq", @num },
+    { name => "eq_band_${_}_bw", @num },
+    { name => "eq_band_${_}_type", enum => [ 0..7 ] },
+  ), 1..6);
+  return 404 if $f->{_err};
+
+  my %set = map +("$_ = ?" => $f->{$_}),
+    map +("eq_band_${_}_range", "eq_band_${_}_level", "eq_band_${_}_freq", "eq_band_${_}_bw", "eq_band_${_}_type"), 1..6;
+  $self->dbExec('UPDATE src_config !H WHERE number = ?', \%set, $nr);
+  _eqtable $f;
+}
+
+
