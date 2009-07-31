@@ -26,13 +26,18 @@ sub _col {
     a href => '#', onclick => sprintf('return conf_select("globalconf", 0, "level_reserve", %d, this, "reslevels")', $v),
       sprintf '%d dB', 10-$v;
   }
+  if($n =~ /routing_preset_([1-8])_label/) {
+    a href => '#', onclick => sprintf('return conf_text("globalconf", 0, "%s", "%s", this)', $n, $v), $v;
+  }
 }
 
 
 sub conf {
   my $self = shift;
 
-  my $conf = $self->dbRow('SELECT samplerate, ext_clock, headroom, level_reserve FROM global_config');
+  my @cols = (map "routing_preset_${_}_label", 1..8);
+  my $conf = $self->dbRow('SELECT samplerate, ext_clock, headroom, level_reserve,
+                           !s FROM global_config', join ', ', @cols);
 
   $self->htmlHeader(page => 'globalconf', title => 'Global configuration');
   div id => 'samplerates', class => 'hidden'; Select;
@@ -48,6 +53,14 @@ sub conf {
    Tr; th 'Headroom';      td sprintf '%.1f dB', $conf->{headroom}; end;
    Tr; th 'Level reserve'; td; _col 'level_reserve', $conf->{level_reserve}; end; end;
   end;
+  br;
+  table;
+   Tr; th colspan => 2, 'Routing preset'; end;
+   Tr; th 'Number'; th 'Label'; end;
+   for (1..8) {
+     Tr; th "$_"; td; _col "routing_preset_${_}_label", $conf->{"routing_preset_${_}_label"}; end; end;
+   }
+  end;
   $self->htmlFooter;
 }
 
@@ -59,11 +72,12 @@ sub ajax {
     { name => 'field', template => 'asciiprint' },
     { name => 'samplerate', required => 0, enum => [32000, 44100, 48000] },
     { name => 'ext_clock', required => 0, enum => [0,1] },
-    { name => 'level_reserve', required => 0, enum => [0,10] }
+    { name => 'level_reserve', required => 0, enum => [0,10] },
+    (map +{ name => "routing_preset_${_}_label", required => 0, maxlength => 32, minlength => 1 }, 1..8),
   );
   return 404 if $f->{_err};
 
-  my %set = map +("$_ = ?", $f->{$_}), grep defined $f->{$_}, qw|samplerate ext_clock level_reserve|;
+  my %set = map +("$_ = ?", $f->{$_}), grep defined $f->{$_}, qw|samplerate ext_clock level_reserve|, (map("routing_preset_${_}_label", 1..8));
   $self->dbExec('UPDATE global_config !H', \%set) if keys %set;
   _col $f->{field}, $f->{$f->{field}};
 }
