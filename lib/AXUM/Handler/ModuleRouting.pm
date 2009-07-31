@@ -47,6 +47,8 @@ sub route {
   return 404 if $p->{_err};
   $p = $p->{p};
 
+  my @cols = (map "routing_preset_${_}_label", 1..8);
+  my $presets = $self->dbRow('SELECT !s FROM global_config', join ', ', @cols);
   my $bus = $self->dbAll('SELECT number, label FROM buss_config ORDER BY number');
   my $mod = $self->dbRow('SELECT number, !s FROM module_config WHERE number = ?',
     join(', ', map +("${_}_level[$p]", "${_}_on_off[$p]", "${_}_pre_post[$p]", "${_}_balance[$p]", "${_}_assignment"), @busses), $nr);
@@ -64,9 +66,8 @@ sub route {
      txt "Module $nr routing configuration";
      p class => 'navigate';
       txt 'preset: ';
-      a href => "?p=1", $p == 1 ? (class => 'sel') : (), 'Default';
-      a href => "?p=$_", $p == $_ ? (class => 'sel') : (), $_
-        for (2..8);
+      a href => "?p=$_", id => "exp_$_", title => $presets->{"routing_preset_${_}_label"}, ($p == $_) ? (class => 'sel', $presets->{"routing_preset_${_}_label"}) : (class => "exp_$_", $_)
+       for (1..8);
      end;
     end;
    end;

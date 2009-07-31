@@ -344,11 +344,30 @@ function exp_out() {
   el.over = 0;
 }
 
+function exp_over_a() {
+  var str_array = this.className.split(' ');
+  var el = this.abbr ? this : document.getElementById(str_array[0]);
+  if(el.over)
+    return;
+  el.over = 1;
+  var tmp;
+  tmp = el.title;
+  el.abbr = el.innerHTML;
+  el.innerHTML = tmp;
+}
+function exp_out_a() {
+  var str_array = this.className.split(' ');
+  var el = this.abbr ? this : document.getElementById(str_array[0]);
+  tmp = el.abbr;
+  el.title = el.innerHTML;
+  el.innerHTML = tmp;
+  el.over = 0;
+}
 
 window.onmousedown = click_input;
 
 window.onload = function() {
-  // look for all td/th tags with a class starting with exp_
+  // look for all td/th/a tags with a class starting with exp_
   var i;
   var l = document.getElementsByTagName('td');
   for(i=0; i<l.length; i++)
@@ -361,6 +380,12 @@ window.onload = function() {
     if(l[i].className.indexOf('exp_') == 0 || l[i].id.indexOf('exp_') == 0) {
       l[i].onmouseover = exp_over;
       l[i].onmouseout = exp_out;
+    }
+  l = document.getElementsByTagName('a');
+  for(i=0; i<l.length; i++)
+    if(l[i].className.indexOf('exp_') == 0 || l[i].id.indexOf('exp_') == 0) {
+      l[i].onmouseover = exp_over_a;
+      l[i].onmouseout = exp_out_a;
     }
 };
 
