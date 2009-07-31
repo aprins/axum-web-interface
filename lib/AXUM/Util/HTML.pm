@@ -30,9 +30,14 @@ sub htmlHeader {
      a href => '/monitorbuss', 'Monitor buss configuration' if $o{page} eq 'monitorbuss';
      if ($o{page} eq 'source') {
        a href => '/source', 'Source configuration' if $o{page} eq 'source';
-       if($o{section}) {
+       if($o{section} eq 'generate') {
          lit " &raquo; ";
          a href => "/source/$o{section}", "Generate";
+       }
+       elsif ($o{section})
+       {
+         lit " &raquo; ";
+         a href => "/source/$o{section}", "Source $o{section} preset";
        }
      }
      a href => '/externsrc', 'Extern source configuration' if $o{page} eq 'externsrc';
