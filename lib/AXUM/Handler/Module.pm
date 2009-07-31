@@ -231,7 +231,7 @@ sub conf {
    Tr; th 'EQ';
     td; _col 'eq_on_off', $mod; end;
     td;
-     a href => "#", onclick => "return conf_eq(this, $nr)"; lit 'EQ settings &raquo;'; end;
+     a href => "#", onclick => "return conf_eq(\"module\", this, $nr)"; lit 'EQ settings &raquo;'; end;
     end;
    end;
    Tr; th 'Dynamics';

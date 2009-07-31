@@ -190,7 +190,7 @@ function conf_addsrcdest(obj, list, type) {
 }
 
 
-function conf_eq(obj, item) {
+function conf_eq(page, obj, item) {
   var d = create_input(obj, function (o) {
     var val = '';
     var l = o.getElementsByTagName('input');
@@ -201,7 +201,7 @@ function conf_eq(obj, item) {
     for(i=0; i<l.length; i++)
       val += ';'+l[i].name+'='+encodeURIComponent(l[i].options[l[i].selectedIndex].value);
     val = val.substr(1, val.length-1);
-    ajax('/ajax/module/'+item+'/eq?'+val, function(h) {
+    ajax('/ajax/'+page+'/'+item+'/eq?'+val, function(h) {
       document.getElementById('eq_table_container').innerHTML = h.responseText;
       remove_input(input_obj);
     });
@@ -211,7 +211,6 @@ function conf_eq(obj, item) {
   d.getElementsByTagName('table')[0].id = 'eq_table';
   return false;
 }
-
 
 function conf_func(addr, nr, f1, f2, f3, sensor, actuator, obj) {
   var i;var l;var o;
