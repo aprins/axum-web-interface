@@ -4,6 +4,7 @@ package AXUM::Handler::Source;
 use strict;
 use warnings;
 use YAWF ':html';
+use Data::Dumper;
 
 YAWF::register(
   qr{source}            	  => \&source,
@@ -88,6 +89,9 @@ sub _col {
   if($n =~ /use_.+/) {
     a href => '#', onclick => sprintf('return conf_set("source", %d, "%s", %d, this)', $d->{number}, $n, $v?0:1),
      $v ? 'yes' : (class => 'off', 'no');
+  }
+  if ($n eq 'routing_preset') {
+    a href => '#', onclick => sprintf('return conf_select("source", %d, "%s", %d, this, "routing_preset_list")', $d->{number}, $n, $v), $lst->{"routing_preset_".$v."_label"};
   }
 }
 
@@ -355,12 +359,30 @@ sub preset {
 
   my $pos_lst = $self->dbAll(q|SELECT number, label, type, active FROM matrix_sources ORDER BY pos|);
   my $src_lst = $self->dbAll(q|SELECT number, label, type, active FROM matrix_sources ORDER BY number|);
+  my $routing_lst = $self->dbRow(q|SELECT routing_preset_1_label,
+                                          routing_preset_2_label,
+                                          routing_preset_3_label,
+                                          routing_preset_4_label,
+                                          routing_preset_5_label,
+                                          routing_preset_6_label,
+                                          routing_preset_7_label,
+                                          routing_preset_8_label
+                                          FROM global_config|);
 
   $self->htmlHeader(page => 'source', section => $nr, title => "Preset for $src->{label}");
   $self->htmlSourceList($pos_lst, 'matrix_sources');
   div id => 'eq_table_container', class => 'hidden';
    _eqtable($src);
   end;
+  div id => 'routing_preset_list', class => 'hidden';
+   Select;
+    foreach my $r (sort keys %$outing_lst) {
+      (my $number) = $r  =~ /(\d+)/;
+      option value => $number, $$routing_lst{$r};
+    }
+   end;
+  end;
+
   table;
    Tr; th colspan => 4, "Preset for $src->{label}"; end;
    Tr;
@@ -398,7 +420,7 @@ sub preset {
    end;
    Tr; th 'Routing';
     td; _col 'use_routing_preset', $src; end;
-    td colspan => 2; _col 'routing_preset', $src; end;
+    td colspan => 2; _col 'routing_preset', $src, $routing_lst; end;
    end;
   end;
   $self->htmlFooter;
@@ -423,6 +445,7 @@ sub ajax {
     { name => 'gain', required => 0, regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ] },
     { name => 'lc_frequency', required => 0, template => 'int' },
     { name => 'dyn_amount', required => 0, template => 'int' },
+    { name => 'routing_preset', required => 0, template => 'int' },
     (map +{ name => $_, required => 0, enum => [0,1] }, @booleans),
     (map +{ name => "redlight$_", required => 0, enum => [0,1] }, 1..8),
     (map +{ name => "monitormute$_", required => 0, enum => [0,1] }, 1..16),
@@ -453,9 +476,21 @@ sub ajax {
     if($f->{field} =~ /(input[12])/) {
       my @l = split /_/, $f->{$f->{field}};
       _col $f->{field}, { number => $f->{item}, $1.'_addr' => $l[0], $1.'_sub_ch' => $l[1] }, _channels $self;
-    } else {
+    } elsif ($f->{field} =~ /source/) {
       _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
         $f->{field} =~ /source/ ? $self->dbAll(q|SELECT number, label, active FROM matrix_sources ORDER BY number|) : ();
+    }
+    else {
+      _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
+        $f->{field} =~ /routing_preset/ ? $self->dbRow(q|SELECT routing_preset_1_label,
+                                                                routing_preset_2_label,
+                                                                routing_preset_3_label,
+                                                                routing_preset_4_label,
+                                                                routing_preset_5_label,
+                                                                routing_preset_6_label,
+                                                                routing_preset_7_label,
+                                                                routing_preset_8_label
+                                                                FROM global_config|) : ();
     }
   }
 }
