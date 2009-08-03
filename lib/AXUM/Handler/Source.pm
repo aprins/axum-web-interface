@@ -376,7 +376,7 @@ sub preset {
   end;
   div id => 'routing_preset_list', class => 'hidden';
    Select;
-    foreach my $r (sort keys %$outing_lst) {
+    foreach my $r (sort keys %$routing_lst) {
       (my $number) = $r  =~ /(\d+)/;
       option value => $number, $$routing_lst{$r};
     }
