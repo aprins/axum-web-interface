@@ -346,19 +346,19 @@ function exp_out() {
 
 function exp_over_a() {
   var str_array = this.className.split(' ');
-  var el = this.abbr ? this : document.getElementById(str_array[0]);
+  var el = this.title ? this : document.getElementById(str_array[0]);
   if(el.over)
     return;
   el.over = 1;
   var tmp;
   tmp = el.title;
-  el.abbr = el.innerHTML;
+  el.title = el.innerHTML;
   el.innerHTML = tmp;
 }
 function exp_out_a() {
   var str_array = this.className.split(' ');
-  var el = this.abbr ? this : document.getElementById(str_array[0]);
-  tmp = el.abbr;
+  var el = this.title ? this : document.getElementById(str_array[0]);
+  tmp = el.title;
   el.title = el.innerHTML;
   el.innerHTML = tmp;
   el.over = 0;
