@@ -29,6 +29,10 @@ sub _col {
   if($n =~ /routing_preset_([1-8])_label/) {
     a href => '#', onclick => sprintf('return conf_text("globalconf", 0, "%s", "%s", this)', $n, $v), $v;
   }
+  if($n eq 'use_module_defaults') {
+    a href => '#', onclick => sprintf('return conf_set("globalconf", 0, "use_module_defaults", %d, this)', $v?0:1),
+      $v ? 'Yes' : 'No';
+  }
 }
 
 
@@ -36,7 +40,7 @@ sub conf {
   my $self = shift;
 
   my @cols = (map "routing_preset_${_}_label", 1..8);
-  my $conf = $self->dbRow('SELECT samplerate, ext_clock, headroom, level_reserve,
+  my $conf = $self->dbRow('SELECT samplerate, ext_clock, headroom, level_reserve, use_module_defaults,
                            !s FROM global_config', join ', ', @cols);
 
   $self->htmlHeader(page => 'globalconf', title => 'Global configuration');
@@ -52,6 +56,7 @@ sub conf {
    Tr; th 'Extern clock';  td; _col 'ext_clock', $conf->{ext_clock}; end; end;
    Tr; th 'Headroom';      td sprintf '%.1f dB', $conf->{headroom}; end;
    Tr; th 'Level reserve'; td; _col 'level_reserve', $conf->{level_reserve}; end; end;
+   Tr; th; lit 'If no preset,<BR>use defaults'; end; td; _col 'use_module_defaults', $conf->{use_module_defaults}; end; end;
   end;
   br;
   table;
@@ -73,11 +78,12 @@ sub ajax {
     { name => 'samplerate', required => 0, enum => [32000, 44100, 48000] },
     { name => 'ext_clock', required => 0, enum => [0,1] },
     { name => 'level_reserve', required => 0, enum => [0,10] },
+    { name => 'use_module_defaults', required => 0, enum => [0,1] },
     (map +{ name => "routing_preset_${_}_label", required => 0, maxlength => 32, minlength => 1 }, 1..8),
   );
   return 404 if $f->{_err};
 
-  my %set = map +("$_ = ?", $f->{$_}), grep defined $f->{$_}, qw|samplerate ext_clock level_reserve|, (map("routing_preset_${_}_label", 1..8));
+  my %set = map +("$_ = ?", $f->{$_}), grep defined $f->{$_}, qw|samplerate ext_clock level_reserve use_module_defaults|, (map("routing_preset_${_}_label", 1..8));
   $self->dbExec('UPDATE global_config !H', \%set) if keys %set;
   _col $f->{field}, $f->{$f->{field}};
 }

@@ -4,7 +4,6 @@ package AXUM::Handler::Source;
 use strict;
 use warnings;
 use YAWF ':html';
-use Data::Dumper;
 
 YAWF::register(
   qr{source}            	  => \&source,
@@ -479,8 +478,7 @@ sub ajax {
     } elsif ($f->{field} =~ /source/) {
       _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
         $f->{field} =~ /source/ ? $self->dbAll(q|SELECT number, label, active FROM matrix_sources ORDER BY number|) : ();
-    }
-    else {
+    } else {
       _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },
         $f->{field} =~ /routing_preset/ ? $self->dbRow(q|SELECT routing_preset_1_label,
                                                                 routing_preset_2_label,
