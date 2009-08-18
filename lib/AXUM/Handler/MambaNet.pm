@@ -50,7 +50,7 @@ sub list {
   if(!$f->{_err}) {
     $f->{del} ? ($self->dbExec('DELETE FROM addresses WHERE addr = ?', $f->{del})) : ();
     $f->{refresh} ? ($self->dbExec('UPDATE addresses SET refresh = TRUE WHERE addr = ?', $f->{refresh})) : ();
-    ($f->{del} or $f->{refresh}) ? (return $self->resRedirect('/service/mambanet')) : ();
+    ($f->{del} or $f->{refresh}) ? (return $self->resRedirect('/service/mambanet', 'temp')) : ();
   }
 
   my $cards = $self->dbAll('SELECT a.addr, a.id, a.name, a.active, a.engine_addr, a.parent, a.firm_major, b.name AS parent_name,
@@ -120,7 +120,7 @@ sub listpre {
 
   if(!$f->{_err}) {
     $f->{del} ? ($self->dbExec('DELETE FROM predefined_node_config WHERE cfg_name = ? AND man_id = ? AND prod_id = ? AND firm_major = ?', $f->{del}, $f->{man}, $f->{prod}, $f->{firm})) : ();
-    $f->{del} ? (return $self->resRedirect('/service/predefined')) : ();
+    $f->{del} ? (return $self->resRedirect('/service/predefined', 'temp')) : ();
   }
 
   my $pre_cfg = $self->dbAll("SELECT p.cfg_name, p.man_id, p.prod_id, p.firm_major, COUNT(*) AS cnt
