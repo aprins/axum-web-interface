@@ -22,6 +22,7 @@ sub _col {
   my %booleans = (
     global_reset => [0, 'yes', 'no'  ],
     interlock    => [0, 'yes', 'no'  ],
+    exclusive    => [0, 'yes', 'no'  ],
     on_off       => [1, 'On',  'Off' ],
     pre_on       => [0, 'Pre', 'Post'],
     pre_level    => [0, 'Pre', 'Post'],
@@ -49,17 +50,17 @@ sub buss {
   my $self = shift;
 
   my $busses = $self->dbAll(q|
-    SELECT number, label, pre_on, pre_level, pre_balance, level, on_off, interlock, global_reset
+    SELECT number, label, pre_on, pre_level, pre_balance, level, on_off, interlock, exclusive, global_reset
       FROM buss_config ORDER BY number ASC|);
 
   $self->htmlHeader(title => 'Buss configuration', page => 'buss');
   table;
-   Tr; th colspan => 9, 'Buss configuration'; end;
+   Tr; th colspan => 10, 'Buss configuration'; end;
    Tr;
     th colspan => 2, '';
     th colspan => 3, 'Master Pre/Post';
     th colspan => 2, 'Master';
-    th '';
+    th colspan => 2, '';
     th rowspan => 2, "Buss reset\nby module active";
    end;
    Tr;
@@ -71,11 +72,12 @@ sub buss {
     th 'Level';
     th 'State';
     th 'Interlock';
+    th 'Exclusive';
    end;
    for my $b (@$busses) {
      Tr;
       th sprintf '%d/%d', $b->{number}*2-1, $b->{number}*2;
-      for(qw|label pre_on pre_level pre_balance level on_off interlock global_reset|) {
+      for(qw|label pre_on pre_level pre_balance level on_off interlock exclusive global_reset|) {
         td; _col $_, $b; end;
       }
      end;
@@ -93,6 +95,7 @@ sub ajax {
     { name => 'item', template => 'int' },
     { name => 'global_reset', required => 0, enum => [0,1] },
     { name => 'interlock',    required => 0, enum => [0,1] },
+    { name => 'exclusive',    required => 0, enum => [0,1] },
     { name => 'on_off',       required => 0, enum => [0,1] },
     { name => 'pre_on',       required => 0, enum => [0,1] },
     { name => 'pre_level',    required => 0, enum => [0,1] },
@@ -104,7 +107,7 @@ sub ajax {
 
   my %set;
   defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
-    for(qw|global_reset interlock on_off pre_on pre_level pre_balance level label|);
+    for(qw|global_reset interlock exclusive on_off pre_on pre_level pre_balance level label|);
 
   $self->dbExec('UPDATE buss_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
   _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} };
