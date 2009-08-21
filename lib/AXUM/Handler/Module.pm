@@ -140,13 +140,18 @@ sub _eqtable {
   my @eq_types = ('Off', 'HPF', 'Low shelf', 'Peaking', 'High shelf', 'LPF', 'BPF', 'Notch');
 
   table;
-   Tr; th 'Band'; th 'Range'; th 'Frequency'; th 'Bandwidth'; th 'Type'; end;
+   Tr; th 'Band'; th 'Range'; th 'Level'; th 'Frequency'; th 'Bandwidth'; th 'Type'; end;
    for my $i (1..6) {
      Tr;
       th $i;
       td;
        input type => 'text', class => 'text', size => 4, name => "eq_band_${i}_range",
          value => $d->{"eq_band_${i}_range"};
+       txt ' dB';
+      end;
+      td;
+       input type => 'text', class => 'text', size => 4, name => "eq_band_${i}_level",
+         value => $d->{"eq_band_${i}_level"};
        txt ' dB';
       end;
       td;
@@ -170,6 +175,7 @@ sub _eqtable {
    Tr;
     td '';
     td '0 - 18';
+    td '-Range - +Range';
     td '20 - 20000';
     td '0.1 - 10';
     td;
@@ -187,12 +193,12 @@ sub conf {
     SELECT number, source_a, source_b, source_c, source_d, insert_source, insert_on_off,
       gain, lc_frequency, lc_on_off, eq_on_off, dyn_amount, dyn_on_off,
       mod_level, mod_on_off,
-      eq_band_1_range, eq_band_1_freq, eq_band_1_bw, eq_band_1_type,
-      eq_band_2_range, eq_band_2_freq, eq_band_2_bw, eq_band_2_type,
-      eq_band_3_range, eq_band_3_freq, eq_band_3_bw, eq_band_3_type,
-      eq_band_4_range, eq_band_4_freq, eq_band_4_bw, eq_band_4_type,
-      eq_band_5_range, eq_band_5_freq, eq_band_5_bw, eq_band_5_type,
-      eq_band_6_range, eq_band_6_freq, eq_band_6_bw, eq_band_6_type
+      eq_band_1_range, eq_band_1_level, eq_band_1_freq, eq_band_1_bw, eq_band_1_type,
+      eq_band_2_range, eq_band_2_level, eq_band_2_freq, eq_band_2_bw, eq_band_2_type,
+      eq_band_3_range, eq_band_3_level, eq_band_3_freq, eq_band_3_bw, eq_band_3_type,
+      eq_band_4_range, eq_band_4_level, eq_band_4_freq, eq_band_4_bw, eq_band_4_type,
+      eq_band_5_range, eq_band_5_level, eq_band_5_freq, eq_band_5_bw, eq_band_5_type,
+      eq_band_6_range, eq_band_6_level, eq_band_6_freq, eq_band_6_bw, eq_band_6_type
     FROM module_config
     WHERE number = ?|,
     $nr
@@ -284,6 +290,7 @@ sub eqajax {
   my @num = (regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ]);
   my $f = $self->formValidate(map +(
     { name => "eq_band_${_}_range", @num },
+    { name => "eq_band_${_}_level", @num },
     { name => "eq_band_${_}_freq", @num },
     { name => "eq_band_${_}_bw", @num },
     { name => "eq_band_${_}_type", enum => [ 0..7 ] },
@@ -291,7 +298,7 @@ sub eqajax {
   return 404 if $f->{_err};
 
   my %set = map +("$_ = ?" => $f->{$_}),
-    map +("eq_band_${_}_range", "eq_band_${_}_freq", "eq_band_${_}_bw", "eq_band_${_}_type"), 1..6;
+    map +("eq_band_${_}_range", "eq_band_${_}_level", "eq_band_${_}_freq", "eq_band_${_}_bw", "eq_band_${_}_type"), 1..6;
   $self->dbExec('UPDATE module_config !H WHERE number = ?', \%set, $nr);
   _eqtable $f;
 }
