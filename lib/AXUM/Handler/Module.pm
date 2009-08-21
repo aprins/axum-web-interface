@@ -245,7 +245,7 @@ sub conf {
     td; _col 'dyn_amount', $mod; end;
    end;
    Tr; td colspan => 4, style => 'background: none', ''; end;
-   Tr; th colspan => 4, 'Module'; end;
+   Tr; th colspan => 4, 'Module (at startup only)'; end;
    Tr; th 'Level'; td colspan => 3; _col 'mod_level', $mod; end; end;
    Tr; th 'State'; td colspan => 3; _col 'mod_on_off', $mod; end; end;
   end;
