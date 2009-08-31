@@ -193,7 +193,7 @@ sub conf {
     SELECT number, source_a, source_b, source_c, source_d, insert_source, insert_on_off,
       gain, lc_frequency, lc_on_off, eq_on_off, dyn_amount, dyn_on_off,
       mod_level, mod_on_off,
-      eq_band_1_range, eq_band_1_level, eq_band_1_freq, eq_band_1_bw, eq_band_1_type,
+      eq_band_1_range, eq_band_1_level,  eq_band_1_freq, eq_band_1_bw, eq_band_1_type,
       eq_band_2_range, eq_band_2_level, eq_band_2_freq, eq_band_2_bw, eq_band_2_type,
       eq_band_3_range, eq_band_3_level, eq_band_3_freq, eq_band_3_bw, eq_band_3_type,
       eq_band_4_range, eq_band_4_level, eq_band_4_freq, eq_band_4_bw, eq_band_4_type,

@@ -345,8 +345,8 @@ sub setdefault {
     { name => 'field', regex => [qr/^[0-9a-f]{8}$/i] }, # = address
   );
   return if $f->{_err};
+
   my $v = $self->formValidate({name => $f->{field}});
-  return if $v->{_err};
   $v = $v->{$f->{field}};
 
   my $obj = $self->dbRow('
@@ -364,13 +364,21 @@ sub setdefault {
             $obj->{actuator_type} == 5 ? "(,$v,,)" : qq|(,,$v,)|;
 
   # TODO: compare value with actuator_def? check min-max?
-  $self->dbExec(defined $obj->{data}
-    ? 'UPDATE defaults SET data = ? WHERE addr = ? AND object = ?'
-    : 'INSERT INTO defaults (data, addr, object) VALUES (?, ?, ?)',
-    $dat, oct "0x$f->{field}", $f->{item}
-  );
+  if($v eq '') {
+    if(defined $obj->{data})
+    {
+      $self->dbExec('DELETE FROM defaults WHERE addr = ? AND object = ?', oct "0x$f->{field}", $f->{item});
+      $obj->{data} = '';
+    }
+  } else {
+    $self->dbExec(defined $obj->{data}
+      ? 'UPDATE defaults SET data = ? WHERE addr = ? AND object = ?'
+      : 'INSERT INTO defaults (data, addr, object) VALUES (?, ?, ?)',
+      $dat, oct "0x$f->{field}", $f->{item}
+    );
+    $obj->{data} = $dat;
+  }
 
-  $obj->{data} = $dat;
   _default $f->{field}, $obj;
 }
 
