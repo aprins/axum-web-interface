@@ -293,6 +293,7 @@ sub generate {
        LIMIT 1|)->{gen};
 
       $c->{name} =~ s/Axum-Rack-//g;
+      $c->{name} =~ s/Rack-//g;
       $self->dbExec("INSERT INTO src_config (number, label, input1_addr, input1_sub_ch, input2_addr, input2_sub_ch) VALUES ($num, '$c->{name} $cnt_src', $c->{addr}, ".($i+1).", $c->{addr}, ".($i+2).");");
       $cnt_src++;
 

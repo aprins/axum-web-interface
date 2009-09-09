@@ -179,6 +179,7 @@ sub generate {
        LIMIT 1|)->{gen};
 
       $c->{name} =~ s/Axum-Rack-//g;
+      $c->{name} =~ s/Rack-//g;
       $self->dbExec("INSERT INTO dest_config (number, label, output1_addr, output1_sub_ch, output2_addr, output2_sub_ch) VALUES ($num, '$c->{name} $cnt_dest', $c->{addr}, ".($i+1).", $c->{addr}, ".($i+2).");");
       $cnt_dest++;
 

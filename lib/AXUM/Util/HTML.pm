@@ -6,7 +6,7 @@ use warnings;
 use YAWF ':html';
 use Exporter 'import';
 
-our @EXPORT = qw| htmlHeader htmlFooter htmlSourceList |;
+our @EXPORT = qw| htmlHeader htmlFooter htmlSourceList OEMName |;
 
 
 sub htmlHeader {
@@ -23,7 +23,7 @@ sub htmlHeader {
     div id => 'loading', 'Saving changes, please wait...';
 
     div id => 'navigate';
-     a href => '/', 'AXUM';
+     a href => '/', OEMName();
      lit " &raquo; ";
      a href => '/', 'Main menu' if $o{page} eq 'home';
      a href => '/buss', 'Buss configuration' if $o{page} eq 'buss';
@@ -110,6 +110,14 @@ sub htmlSourceList {
     end if $last;
    end;
   end;
+}
+
+sub OEMName {
+  open my $F, "/var/lib/axum/OEMName" or die "Couldn't open file /var/lib/axum/OEMName: $!";
+  my $n =  <$F>;
+  close FILE;
+  $n =~ s/\s+$//;
+  return $n;
 }
 
 

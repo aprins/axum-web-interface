@@ -14,9 +14,9 @@ YAWF::register(
 sub service {
   my $self = shift;
 
-  $self->htmlHeader(title => 'AXUM service pages', page => 'service');
+  $self->htmlHeader(title => $self->OEMName().' service pages', page => 'service');
   table;
-   Tr; th colspan => 2, 'Axum service'; end;
+   Tr; th colspan => 2, $self->OEMName().' service'; end;
    Tr; th 1; td; a href => '/service/mambanet', 'MambaNet node overview'; end; end;
    Tr; th 2; td; a href => '/source/generate', 'Generate sources'; end; end;
    Tr; th 3; td; a href => '/dest/generate', 'Generate destinations'; end; end;
