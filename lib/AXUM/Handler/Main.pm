@@ -14,9 +14,9 @@ YAWF::register(
 sub home {
   my $self = shift;
 
-  $self->htmlHeader(title => $self->OEMName().' configuration pages', page => 'home');
+  $self->htmlHeader(title => $self->OEMFullProductName().' configuration pages', page => 'home');
   table;
-   Tr; th colspan => 2, $self->OEMName().' configuration'; end;
+   Tr; th colspan => 2, $self->OEMFullProductName().' configuration'; end;
    Tr; th colspan => 2, 'Buss settings'; end;
    Tr; th 1; td; a href => '/buss', 'Mix buss configuration'; end; end;
    Tr; th 2; td; a href => '/monitorbuss', 'Monitor buss configuration'; end; end;
