@@ -1,0 +1,53 @@
+* { margin: 0; padding: 0; font-family: "Lucida Grande", "Lucida", "Verdana", sans-serif }
+body { background: url("/images/bg.png"); margin: 0px; font-size: 13px; }
+a { color: #00f; }
+td.off, a.off, tr.inactive a.off { color: #bbb!important; }
+img { border: 0 }
+.hidden { display: none!important }
+
+#header       { position: absolute; left: 60px; top:    0; right: 60px; height: 60px; background: url("images/bg_top.png") }
+#header_left  { position: absolute; left:    0; top:    0; width: 60px; height: 60px; background: url("images/bg_topleft.png") }
+#header_right { position: absolute; right:   0; top:    0; width: 60px; height: 60px; background: url("images/bg_topright.png") }
+#border_left  { position: absolute; left:    0; top: 60px; bottom: 60px; width: 60px; background: url("images/bg_left.png") }
+#border_right { position: absolute; right:   0; top: 60px; bottom: 60px; width: 60px; background: url("images/bg_right.png") }
+#footer       { position: absolute; left: 60px; bottom: 0; right: 60px; height: 60px; background: url("images/bg_bottom.png") }
+#footer_left  { position: absolute; left:    0; bottom: 0; width: 60px; height: 60px; background: url("images/bg_bottomleft.png") }
+#footer_right { position: absolute; right:   0; bottom: 0; width: 60px; height: 60px; background: url("images/bg_bottomright.png") }
+#hinge_top    { position: absolute; right:   0; top:  15%; width: 35px; height: 163px; background: url("images/hinge.png") }
+#hinge_bottom { position: absolute; right:   0; bottom: 15%; width: 35px; height: 163px; background: url("images/hinge.png") }
+
+#loading      { position: absolute; right: 45px; top: 42px; color: #f00; display: none; font-weight: bold }
+#refresh      { position: absolute; right: 45px; top: 42px; color: #f00; display: none; font-weight: bold }
+#navigate { position: absolute; left: 45px; top: 42px; }
+#navigate a { color: #00F }
+
+#content { background-color: #ccc; position: absolute; top: 60px; bottom: 50px; left: 42px; right: 45px; overflow: auto; border: 1px solid #aaa; padding: 0; }
+
+table { background-color: transparent; font-size: 11px; border-collapse: collapse; }
+td    { background-color: #f0f0f0; border-left: none; border-right: 1px solid #cbd1d8; border-bottom: 1px solid #cbd1d8; padding: 1px 5px; height: 18px; line-height: 1.6em; white-space: nowrap; text-align: center; }
+th    { border-left: 1px solid #e5e5e5; border-right: 1px solid #a5a5a5; padding: 0px 5px; height: 20px; font-weight: bold; background: url(/images/table_head.png); }
+tr.inactive th { color: #999 }
+tr.inactive a { color: #aaf }
+tr.inactive td { color: #999 }
+tr.empty th { border: none; height: 20px; font-weight: bold; background: none; }
+th.inactive { color: #999 }
+td.inactive { color: #999 }
+td.inactive a { color: #aaf }
+
+#input_obj { padding: 3px; background-color: #fff; border: 1px solid #aaa }
+#input_obj div { display: inline }
+
+input.text { border: 1px solid #666; background-color: #eee }
+input.button { border: 1px solid #666; background-color: #bbb }
+optgroup option { padding-left: 15px }
+option.off { color: #bbb }
+
+p.navigate { display: inline; float: right; margin-left:7px}
+p.navigate a { font-weight: normal; margin-right: 5px }
+p.navigate a.sel { font-weight: bold; text-decoration: none; color: #000; padding-left: 2px; padding-right: 2px; border: dotted 1px #888 }
+
+#eq_table td { padding: 0 5px; background-color: #fff }
+#input_obj select, #eq_table select { height: 20px; border: 1px solid #666; background-color: #eee }
+#input_obj option, #eq_table option { padding: 0 3px }
+#eq_table input.text { text-align: right }
+
