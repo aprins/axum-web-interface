@@ -112,6 +112,7 @@ sub _col {
   my $v = $d->{$n};
 
   if($n eq 'source_a' || $n eq 'source_b' || $n eq 'source_c' || $n eq 'source_d' || $n eq 'insert_source') {
+    $v = 0 if (!$lst->[$v]);
     a href => '#', onclick => sprintf('return conf_select("module", %d, "%s", %d, this, "matrix_sources")', $d->{number}, $n, $v),
       !$v || !$lst->[$v]{active} ? (class => 'off') : (), $v ? $lst->[$v]{label} : 'none';
   }
