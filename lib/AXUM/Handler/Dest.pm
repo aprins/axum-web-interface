@@ -87,7 +87,7 @@ sub dest {
   if(!$f->{_err}) {
     $self->dbExec('DELETE FROM dest_config WHERE number = ?', $f->{del});
     $self->dbExec("SELECT dest_config_renumber();");
-    return $self->resRedirect('/dest');
+    return $self->resRedirect('/dest', 'temp');
   }
 
   my $ch = _channels $self;

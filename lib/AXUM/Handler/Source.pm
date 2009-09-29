@@ -4,6 +4,7 @@ package AXUM::Handler::Source;
 use strict;
 use warnings;
 use YAWF ':html';
+use Data::Dumper;
 
 YAWF::register(
   qr{source}            	  => \&source,
@@ -185,7 +186,7 @@ sub source {
   if(!$f->{_err}) {
     $self->dbExec('DELETE FROM src_config WHERE number = ?', $f->{del});
     $self->dbExec("SELECT src_config_renumber()");
-    return $self->resRedirect('/source');
+    return $self->resRedirect('/source', 'temp');
   }
 
   my $mb = $self->dbAll('SELECT number, label, number <= dsp_count()*4 AS active
