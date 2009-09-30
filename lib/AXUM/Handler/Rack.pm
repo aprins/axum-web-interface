@@ -156,7 +156,7 @@ sub _funcname {
    if($f1 == -1) {
      txt 'not configured';
    } else {
-     my $name = $self->dbRow('SELECT name FROM functions WHERE (func).type = ? AND (func).func = ?', $f1, $f3)->{name};
+     my $name = $self->dbRow('SELECT name FROM functions WHERE (func).type = ? AND (func).func = ? ORDER BY pos', $f1, $f3)->{name};
      $name =~ s{Buss \d+/(\d+)}{$buss->[$1/2-1]}ieg;
      txt 'Module '.($f2+1).': ' if $f1 == 0;
      txt $buss->[$f2].': ' if $f1 == 1;
@@ -247,7 +247,7 @@ sub funclist {
   $where = $where ? "WHERE $where" : '';
   my @func;
   for (@{$self->dbAll(
-      'SELECT (func).type, (func).func, name, rcv_type, xmt_type FROM functions !s ORDER BY (func).func', $where)}) {
+      'SELECT (func).type, (func).func, name, rcv_type, xmt_type FROM functions !s ORDER BY pos', $where)}) {
     push @{$func[$_->{type}]}, $_;
     delete $_->{type};
     $_->{name} =~ s{Buss \d+/(\d+)}{$buss[$1/2-1]}ieg;
