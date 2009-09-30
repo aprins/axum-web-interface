@@ -169,7 +169,7 @@ sub generate {
   my $cnt_dest;
   $cnt_dest = 1;
 
-  $self->dbExec("TRUNCATE TABLE dest_config;");
+  $self->dbExec("DELETE FROM dest_config;");
   for my $c (@$cards) {
     for ($i=0; $i<$c->{output_ch_cnt}; $i+=2)
     {

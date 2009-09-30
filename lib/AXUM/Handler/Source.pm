@@ -284,7 +284,7 @@ sub generate {
   my $cnt_src;
   $cnt_src = 1;
 
-  $self->dbExec("TRUNCATE TABLE src_config;");
+  $self->dbExec("DELETE FROM src_config;");
   for my $c (@$cards) {
     for ($i=0; $i<$c->{input_ch_cnt}; $i+=2)
     {
