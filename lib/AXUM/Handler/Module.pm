@@ -13,6 +13,8 @@ YAWF::register(
   qr{ajax/module/([1-9][0-9]*)/eq} => \&eqajax,
 );
 
+my @phase_types = ('Normal', 'Left', 'Right', 'Both');
+my @mono_types = ('Stereo', 'Left', 'Right', 'Mono');
 
 sub overview {
   my $self = shift;
@@ -132,6 +134,14 @@ sub _col {
     a href => '#', onclick => sprintf('return conf_proc("module", %d, "dyn_amount", %d, this)', $d->{number}, $v),
       sprintf '%d%%', $v;
   }
+  if($n eq 'phase') {
+    a href => '#', onclick => sprintf('return conf_select("module", %d, "%s", %d, this, "phase_list")', $d->{number}, $n, $v),
+      $v == 3 ? (class => 'off') : (), $phase_types[$v];
+  }
+  if($n eq 'mono') {
+    a href => '#', onclick => sprintf('return conf_select("module", %d, "%s", %d, this, "mono_list")', $d->{number}, $n, $v),
+      $v == 3 ? (class => 'off') : (), $mono_types[$v];
+  }
 }
 
 
@@ -192,7 +202,7 @@ sub conf {
 
   my $mod = $self->dbRow(q|
     SELECT number, source_a, source_b, source_c, source_d, insert_source, insert_on_off,
-      gain, lc_frequency, lc_on_off, eq_on_off, dyn_amount, dyn_on_off,
+      gain, lc_frequency, lc_on_off, phase, phase_on_off, mono, mono_on_off, eq_on_off, dyn_amount, dyn_on_off,
       mod_level, mod_on_off,
       eq_band_1_range, eq_band_1_level,  eq_band_1_freq, eq_band_1_bw, eq_band_1_type,
       eq_band_2_range, eq_band_2_level, eq_band_2_freq, eq_band_2_bw, eq_band_2_type,
@@ -214,19 +224,31 @@ sub conf {
   div id => 'eq_table_container', class => 'hidden';
    _eqtable($mod);
   end;
+  div id => 'phase_list', class => 'hidden';
+   Select;
+    option value => $_, $phase_types[$_]
+      for (0..3);
+   end;
+  end;
+  div id => 'mono_list', class => 'hidden';
+   Select;
+    option value => $_, $mono_types[$_]
+      for (0..3);
+   end;
+  end;
   table;
    Tr; th colspan => 4, "Configuration for module $nr"; end;
    Tr; th 'Source A'; td colspan => 3; _col 'source_a', $mod, $src_lst; end; end;
    Tr; th 'Source B'; td colspan => 3; _col 'source_b', $mod, $src_lst; end; end;
    Tr; th 'Source C'; td colspan => 3; _col 'source_c', $mod, $src_lst; end; end;
    Tr; th 'Source D'; td colspan => 3; _col 'source_d', $mod, $src_lst; end; end;
-   Tr; th 'Gain';     td colspan => 3; _col 'gain', $mod; end; end;
    Tr; td colspan => 4, style => 'background: none', ''; end;
    Tr;
     th '';
     th 'State';
     th 'Default';
    end;
+   Tr; th 'Gain';     td colspan => 3; _col 'gain', $mod; end; end;
    Tr; th 'Low cut';
     td; _col 'lc_on_off', $mod; end;
     td; _col 'lc_frequency', $mod; end;
@@ -234,6 +256,14 @@ sub conf {
    Tr; th 'Insert';
     td; _col 'insert_on_off', $mod; end;
     td; _col 'insert_source', $mod, $src_lst; end;
+   end;
+   Tr; th 'Phase';
+    td; _col 'phase_on_off', $mod; end;
+    td; _col 'phase', $mod; end;
+   end;
+   Tr; th 'Mono';
+    td; _col 'mono_on_off', $mod; end;
+    td; _col 'mono', $mod; end;
    end;
    Tr; th 'EQ';
     td; _col 'eq_on_off', $mod; end;
@@ -257,7 +287,7 @@ sub conf {
 sub ajax {
   my $self = shift;
 
-  my @booleans = qw|lc_on_off insert_on_off eq_on_off dyn_on_off mod_on_off|;
+  my @booleans = qw|lc_on_off insert_on_off phase_on_off mono_on_off eq_on_off dyn_on_off mod_on_off|;
 
   my $f = $self->formValidate(
     { name => 'field', template => 'asciiprint' },
@@ -271,13 +301,15 @@ sub ajax {
     { name => 'gain', required => 0, regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ] },
     { name => 'lc_frequency', required => 0, template => 'int' },
     { name => 'dyn_amount', required => 0, template => 'int' },
+    { name => 'phase', required => 0, template => 'int' },
+    { name => 'mono', required => 0, template => 'int' },
     (map +{ name => $_, required => 0, enum => [0,1] }, @booleans),
   );
   return 404 if $f->{_err};
 
   my %set;
   defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
-    for(@booleans, qw|source_a source_b source_c source_d insert_source mod_level lc_frequency gain dyn_amount|);
+    for(@booleans, qw|source_a source_b source_c source_d insert_source mod_level lc_frequency gain dyn_amount phase mono|);
 
   $self->dbExec('UPDATE module_config !H WHERE number = ?', \%set, $f->{item}) if keys %set;
   _col $f->{field}, { number => $f->{item}, $f->{field} => $f->{$f->{field}} },

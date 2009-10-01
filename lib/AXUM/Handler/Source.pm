@@ -14,6 +14,8 @@ YAWF::register(
   qr{ajax/source/([1-9][0-9]*)/eq} => \&eqajax,
 );
 
+my @phase_types = ('Normal', 'Left', 'Right', 'Both');
+my @mono_types = ('Stereo', 'Left', 'Right', 'Mono');
 
 sub _channels {
   return shift->dbAll(q|SELECT s.addr, a.active, s.slot_nr, g.channel, a.name
@@ -92,6 +94,14 @@ sub _col {
   }
   if ($n eq 'routing_preset') {
     a href => '#', onclick => sprintf('return conf_select("source", %d, "%s", %d, this, "routing_preset_list")', $d->{number}, $n, $v), $lst->{"routing_preset_".$v."_label"};
+  }
+  if($n eq 'phase') {
+    a href => '#', onclick => sprintf('return conf_select("source", %d, "%s", %d, this, "phase_list")', $d->{number}, $n, $v),
+      $v == 3 ? (class => 'off') : (), $phase_types[$v];
+  }
+  if($n eq 'mono') {
+    a href => '#', onclick => sprintf('return conf_select("source", %d, "%s", %d, this, "mono_list")', $d->{number}, $n, $v),
+      $v == 3 ? (class => 'off') : (), $mono_types[$v];
   }
 }
 
@@ -317,6 +327,12 @@ sub preset {
          use_insert_preset,
          insert_source,
          insert_on_off,
+         use_phase_preset,
+         phase,
+         phase_on_off,
+         use_mono_preset,
+         mono,
+         mono_on_off,
          use_eq_preset,
          eq_band_1_range,
          eq_band_1_level,
@@ -383,6 +399,18 @@ sub preset {
     }
    end;
   end;
+  div id => 'phase_list', class => 'hidden';
+   Select;
+    option value => $_, $phase_types[$_]
+      for (0..3);
+   end;
+  end;
+  div id => 'mono_list', class => 'hidden';
+   Select;
+    option value => $_, $mono_types[$_]
+      for (0..3);
+   end;
+  end;
 
   table;
    Tr; th colspan => 4, "Preset for $src->{label}"; end;
@@ -407,6 +435,16 @@ sub preset {
     td; _col 'insert_on_off', $src; end;
     td; _col 'insert_source', $src, $src_lst; end;
    end;
+   Tr; th 'Phase';
+    td; _col 'use_phase_preset', $src; end;
+    td; _col 'phase_on_off', $src; end;
+    td; _col 'phase', $src; end;
+   end;
+   Tr; th 'Mono';
+    td; _col 'use_mono_preset', $src; end;
+    td; _col 'mono_on_off', $src; end;
+    td; _col 'mono', $src; end;
+   end;
    Tr; th 'EQ';
     td; _col 'use_eq_preset', $src; end;
     td; _col 'eq_on_off', $src; end;
@@ -430,8 +468,8 @@ sub preset {
 sub ajax {
   my $self = shift;
 
-  my @booleans = qw|use_gain_preset use_lc_preset use_insert_preset use_eq_preset use_dyn_preset use_routing_preset
-                    lc_on_off insert_on_off eq_on_off dyn_on_off|;
+  my @booleans = qw|use_gain_preset use_lc_preset use_insert_preset use_phase_preset use_mono_preset use_eq_preset use_dyn_preset use_routing_preset
+                    lc_on_off insert_on_off phase_on_off mono_on_off eq_on_off dyn_on_off|;
 
   my $f = $self->formValidate(
     { name => 'field', template => 'asciiprint' },
@@ -445,6 +483,8 @@ sub ajax {
     { name => 'insert_source', required => 0, 'int' },
     { name => 'gain', required => 0, regex => [ qr/-?[0-9]*(\.[0-9]+)?/, 0 ] },
     { name => 'lc_frequency', required => 0, template => 'int' },
+    { name => 'phase', required => 0, template => 'int' },
+    { name => 'mono', required => 0, template => 'int' },
     { name => 'dyn_amount', required => 0, template => 'int' },
     { name => 'routing_preset', required => 0, template => 'int' },
     (map +{ name => $_, required => 0, enum => [0,1] }, @booleans),
@@ -469,7 +509,7 @@ sub ajax {
   } else {
     my %set;
     defined $f->{$_} and ($set{"$_ = ?"} = $f->{$_})
-      for(qw|label input_phantom input_pad input_gain gain lc_frequency insert_source dyn_amount routing_preset|, (map($_, @booleans)), (map "redlight$_", 1..8), (map "monitormute$_", 1..16));
+      for(qw|label input_phantom input_pad input_gain gain lc_frequency insert_source phase mono dyn_amount routing_preset|, (map($_, @booleans)), (map "redlight$_", 1..8), (map "monitormute$_", 1..16));
     defined $f->{$_} and $f->{$_} =~ /([0-9]+)_([0-9]+)/ and ($set{$_.'_addr = ?, '.$_.'_sub_ch = ?'} = [ $1, $2 ])
       for('input1', 'input2');
 
