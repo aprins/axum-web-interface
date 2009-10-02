@@ -80,6 +80,10 @@ sub htmlHeader {
          lit " &raquo; ";
          a href => '/service/predefined', 'Predefined';
        }
+       if($o{section} eq 'functions') {
+         lit " &raquo; ";
+         a href => '/service/functions', 'Functions';
+       }
      }
     end;
     div id => 'content';

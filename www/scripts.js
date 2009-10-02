@@ -389,4 +389,8 @@ window.onload = function() {
     }
 };
 
-
+function msg_box(textstring, url) {
+  if (confirm(textstring)){
+    location = url;
+  }
+}
