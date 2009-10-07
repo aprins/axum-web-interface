@@ -246,9 +246,12 @@ sub conf {
    Tr;
     th '';
     th 'State';
-    th 'Default';
+    th 'Value';
    end;
-   Tr; th 'Gain';     td colspan => 3; _col 'gain', $mod; end; end;
+   Tr; th 'Digital gain';
+    td '-';
+    td; _col 'gain', $mod; end;
+   end;
    Tr; th 'Low cut';
     td; _col 'lc_on_off', $mod; end;
     td; _col 'lc_frequency', $mod; end;
@@ -276,7 +279,7 @@ sub conf {
     td; _col 'dyn_amount', $mod; end;
    end;
    Tr; td colspan => 4, style => 'background: none', ''; end;
-   Tr; th colspan => 4, 'Module (at startup only)'; end;
+   Tr; th colspan => 4, 'Module at startup'; end;
    Tr; th 'Level'; td colspan => 3; _col 'mod_level', $mod; end; end;
    Tr; th 'State'; td colspan => 3; _col 'mod_on_off', $mod; end; end;
   end;

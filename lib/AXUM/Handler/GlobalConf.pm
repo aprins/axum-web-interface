@@ -59,9 +59,9 @@ sub conf {
    Tr; th 'Samplerate';    td; _col 'samplerate', $conf->{samplerate}; end; end;
    Tr; th 'Extern clock';  td; _col 'ext_clock', $conf->{ext_clock}; end; end;
    Tr; th 'Headroom';      td sprintf '%.1f dB', $conf->{headroom}; end;
-   Tr; th 'Level reserve'; td; _col 'level_reserve', $conf->{level_reserve}; end; end;
+   Tr; th 'Fader top level'; td; _col 'level_reserve', $conf->{level_reserve}; end; end;
    Tr; th 'Auto momentary'; td; _col 'auto_momentary', $conf->{auto_momentary}; end; end;
-   Tr; th; lit 'If no preset,<BR>use defaults'; end; td; _col 'use_module_defaults', $conf->{use_module_defaults}; end; end;
+   Tr; th; lit 'If no source preset,<BR>use module defaults'; end; td; _col 'use_module_defaults', $conf->{use_module_defaults}; end; end;
   end;
   br;
   table;

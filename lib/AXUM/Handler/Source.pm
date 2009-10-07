@@ -434,16 +434,23 @@ sub preset {
   end;
 
   table;
-   Tr; th colspan => 4, "Preset for $src->{label}"; end;
+   Tr; th colspan => 4, "Settings for $src->{label}"; end;
    Tr;
     th '';
-    th 'Use';
-    th colspan => 2, 'Settings';
+    th 'Override at';
+    th colspan => 2, 'Preset';
    end;
    Tr;
-    th 'Gain';
+    th '';
+    th 'source select';
+    th 'state';
+    th 'value';
+   end;
+   Tr;
+    th 'Digital gain';
     td; _col 'use_gain_preset', $src; end;
-    td colspan => 2; _col 'gain', $src; end;
+    td '-';
+    td; _col 'gain', $src; end;
    end;
    Tr;
     th 'Low cut';
@@ -480,7 +487,8 @@ sub preset {
    end;
    Tr; th 'Routing';
     td; _col 'use_routing_preset', $src; end;
-    td colspan => 2; _col 'routing_preset', $src, $routing_lst; end;
+    td '-';
+    td; _col 'routing_preset', $src, $routing_lst; end;
    end;
   end;
   $self->htmlFooter;
