@@ -234,8 +234,9 @@ sub source {
    Tr; th colspan => 34, 'Source configuration'; end;
    Tr;
     th '';
-    th colspan => 6, '';
-    th 'Preset';
+    th colspan => 3, '';
+    th colspan => 3, 'Input';
+    th 'Module';
     th colspan => 8, 'Redlight';
     th colspan => 16, 'Monitor destination mute/dim';
     th '';
@@ -248,7 +249,7 @@ sub source {
     th 'Phantom';
     th 'Pad';
     th 'Gain';
-    th 'Configuration';
+    th 'Preset';
     th $_ for (1..8);
     th abbr => $_->{label}, $_->{active} ? ():(class => 'inactive'), id => "exp_monitormute$_->{number}", $_->{number}%10
       for (@$mb);
@@ -261,9 +262,30 @@ sub source {
       td; _col 'label', $s; end;
       td; _col 'input1', $s, $chan; end;
       td; _col 'input2', $s, $chan; end;
-      for (qw|input_phantom input_pad input_gain|) {
-        td; _col $_, $s; end;
-      }
+      td;
+        my $t = $self->dbRow("SELECT COUNT(*) FROM node_config WHERE (func).type = 5 AND (func).seq = $s->{number}-1 AND (func).func = 60");
+        if ($t->{count}) {
+          _col 'input_phantom', $s;
+        } else {
+          txt '-';
+        }
+      end;
+      td;
+        my $t = $self->dbRow("SELECT COUNT(*) FROM node_config WHERE (func).type = 5 AND (func).seq = $s->{number}-1 AND (func).func = 61");
+        if ($t->{count}) {
+          _col 'input_pad', $s;
+        } else {
+          txt '-';
+        }
+      end;
+      td;
+        my $t = $self->dbRow("SELECT COUNT(*) FROM node_config WHERE (func).type = 5 AND (func).seq = $s->{number}-1 AND (func).func = 62");
+        if ($t->{count}) {
+          _col 'input_gain', $s;
+        } else {
+          txt '-';
+        }
+      end;
       td; _col 'preset', $s; end;
       for (map "redlight$_", 1..8) {
         td; _col $_, $s; end;
@@ -281,7 +303,6 @@ sub source {
   end;
   br; br;
   a href => '#', onclick => 'return conf_addsrcdest(this, "input_channels", "input")', 'Create new source';
-  #a href => '/source/generate', 'Delete sources and generate them from the rack layout';
 
   $self->htmlFooter;
 }
