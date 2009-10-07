@@ -144,7 +144,14 @@ sub dest {
       td; _col 'label', $d; end;
       td; _col 'output1', $d, $ch; end;
       td; _col 'output2', $d, $ch; end;
-      td; _col 'level', $d; end;
+      td;
+        my $t = $self->dbRow("SELECT COUNT(*) FROM node_config WHERE (func).type = 6 AND (func).seq = $d->{number}-1 AND (func).func = 4");
+        if ($t->{count}) {
+          _col 'level', $d;
+        } else {
+          txt '-';
+        }
+      end;
       td; _col 'source', $d, $src_lst; end;
       td; _col 'mix_minus_source', $d, $src_lst; end;
       td;
