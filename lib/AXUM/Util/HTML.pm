@@ -26,6 +26,7 @@ sub htmlHeader {
      a href => '/', OEMFullProductName();
      lit " &raquo; ";
      a href => '/', 'Main menu' if $o{page} eq 'home';
+     a href => '/ipclock', 'IP/Clock configuration' if $o{page} eq 'ipclock';
      a href => '/buss', 'Buss configuration' if $o{page} eq 'buss';
      a href => '/monitorbuss', 'Monitor buss configuration' if $o{page} eq 'monitorbuss';
      if ($o{page} eq 'source') {
@@ -123,5 +124,6 @@ sub OEMFullProductName {
   $n =~ s/\s+$//;
   return $n;
 }
+
 
 1;

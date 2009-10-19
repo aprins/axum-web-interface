@@ -5,7 +5,6 @@ use strict;
 use warnings;
 use YAWF ':html';
 
-
 YAWF::register(
   qr{service} => \&service,
   qr{service/functions} => \&functions,

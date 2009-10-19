@@ -394,3 +394,73 @@ function msg_box(textstring, url) {
     location = url;
   }
 }
+
+function conf_tz( obj) {
+  var i;var l;var o;var m;
+  var cont_nr = 0;
+  var area_nr = 0;
+  var d = create_input(obj, function(f) {
+    l = document.getElementById('tz_main').getElementsByTagName('select')[0];
+    cont_nr = l.options[l.selectedIndex].value;
+    m = document.getElementById('cont_'+cont_nr).getElementsByTagName('select')[0];
+    area_nr = m.options[m.selectedIndex].value;
+    n = document.getElementById('region_'+cont_nr+'/'+area_nr).getElementsByTagName('select')[0];
+    while(obj.nodeName.toLowerCase() != 'td')
+      obj = obj.parentNode;
+    ajax('/ajax/set_tz?tz='+n.options[n.selectedIndex].value, function(h) {
+      obj.innerHTML = h.responseText;
+      remove_input(input_obj);
+    });
+  });
+  if(!d) return false;
+  d.innerHTML = 'loading timezone list...';
+  ajax('/ajax/tz_lst', function(h) {
+    d.innerHTML = h.responseText + '<input type="submit" value="Save" class="button" />';
+    l = d.getElementsByTagName('div');
+    for(i=0; i<l.length; i++)
+      if(l[i].id != 'tz_main' && l[i].id != 'cont_'+cont_nr && l[i].id != 'region_'+cont_nr+'/'+area_nr)
+        l[i].className = 'hidden';
+
+    l = document.getElementById('tz_main').getElementsByTagName('select')[0];
+    for(i=0; i<l.options.length; i++)
+      l.options[i].selected = l.options[i].value == cont_nr;
+
+    l.onchange = function() {
+      cont_nr = this.options[this.selectedIndex].value;
+      l = d.getElementsByTagName('div');
+      for(i=0; i<l.length; i++)
+      {
+        l[i].className = l[i].id != 'tz_main' && l[i].id != 'cont_'+cont_nr ? 'hidden': '';
+      }
+      for(i=0; i<l.length; i++) {
+        if (l[i].id == 'cont_'+cont_nr) {
+          l[i].getElementsByTagName('select')[0].onchange();
+        }
+      }
+    };
+
+    l = document.getElementById('tz_main').getElementsByTagName('select')[0];
+    for(i=0; i<l.options.length; i++)
+    {
+      m = document.getElementById('cont_'+i).getElementsByTagName('select')[0];
+      m.onchange = function() {
+        n = document.getElementById('tz_main').getElementsByTagName('select')[0];
+        cont_nr = n.options[n.selectedIndex].value;
+        area_nr = this.options[this.selectedIndex].value;
+        m = d.getElementsByTagName('div');
+        for (j=0; j<m.length; j++)
+        {
+          m[j].className = m[j].id != 'tz_main' && m[j].id != 'cont_'+cont_nr ? 'hidden': '';
+          if (m[j].id == 'region_'+cont_nr+'/'+area_nr) {
+            if (m[j].getElementsByTagName('select')[0].options.length>1) {
+              m[j].className = '';
+            }
+          }
+        }
+      }
+    }
+    l.onchange();
+  });
+  return false;
+}
+
